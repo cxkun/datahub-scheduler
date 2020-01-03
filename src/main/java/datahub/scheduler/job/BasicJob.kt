@@ -13,6 +13,17 @@
  */
 package datahub.scheduler.job
 
-class BasicJob {
-// todo
+import org.quartz.Job
+import org.quartz.JobExecutionContext
+
+abstract class BasicJob : Job {
+    abstract fun preProcess(context: JobExecutionContext?)
+    abstract fun process(context: JobExecutionContext?)
+    abstract fun postProcess(context: JobExecutionContext?)
+
+    override fun execute(context: JobExecutionContext?) {
+        preProcess(context)
+        process(context)
+        postProcess(context)
+    }
 }
