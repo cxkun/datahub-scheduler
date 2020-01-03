@@ -41,22 +41,10 @@
             <artifactId>ktorm-core</artifactId>
             <version>2.6</version>
         </dependency>
-
-        <!--jackson-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.9.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.9.3</version>
+            <groupId>me.liuwj.ktorm</groupId>
+            <artifactId>ktorm-jackson</artifactId>
+            <version>2.6</version>
         </dependency>
 
         <!--quartz-->
