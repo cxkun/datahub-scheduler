@@ -13,6 +13,8 @@
  */
 package datahub.scheduler.models
 
+import datahub.scheduler.models.dtype.enum
+import datahub.scheduler.ops.OperatorType
 import me.liuwj.ktorm.dsl.QueryRowSet
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
@@ -20,7 +22,9 @@ import java.time.LocalDateTime
 
 data class Task(
     val id: Int,
+    val type: Enum<OperatorType>,
     val name: String,
+    val command: String,
     val ownerId: Int,
     val parentIds: Set<Int>,
     val childrenIds: Set<Int>,
@@ -31,7 +35,9 @@ data class Task(
 
 object Tasks : BaseTable<Task>("task") {
     val id by int("id").primaryKey()
+    val type by enum("type", typeRef<OperatorType>())
     val name by varchar("name")
+    val command by varchar("command")
     val ownerId by int("owner_id")
     val parentIds by json("parent_ids", typeRef<Set<Int>>())
     val childrenIds by json("children_ids", typeRef<Set<Int>>())
@@ -42,7 +48,9 @@ object Tasks : BaseTable<Task>("task") {
 
     override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = Task(
         id = row[id] ?: 0,
+        type = row[type] ?: OperatorType.Unsupported,
         name = row[name] ?: "",
+        command = row[command] ?: "",
         ownerId = row[ownerId] ?: 0,
         parentIds = row[parentIds] ?: setOf(),
         childrenIds = row[childrenIds] ?: setOf(),
