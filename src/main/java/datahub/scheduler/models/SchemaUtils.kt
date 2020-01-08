@@ -13,7 +13,9 @@
  */
 package datahub.scheduler.models
 
+import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.schema.BaseTable
+import org.apache.log4j.Logger
 import kotlin.reflect.full.findAnnotation
 
 @Target(AnnotationTarget.CLASS)
@@ -26,4 +28,43 @@ val BaseTable<*>.DDL: String
 
 
 fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
+
+object SchemaUtils {
+    private val logger = Logger.getLogger(this.javaClass)
+
+    // todo: read config from properties file
+    private val db = Database.connect(
+        url = "jdbc:mysql://localhost:3306",
+        driver = "com.mysql.jdbc.Driver",
+        user = "root",
+        password = "root"
+    )
+
+    private val models = listOf(Tasks, Groups, Instances, Jobs, Machines, Users)
+
+    fun buildDB() = db.useConnection { conn ->
+        logger.info("create database datahub")
+        conn.prepareStatement("create database if not exists datahub").use { it.execute() }
+        logger.info("database datahub have been created")
+        models.forEach { table ->
+            val createStatement = table.DDL.withDB("datahub")
+            logger.info("create table for class ${table.javaClass.name}:\n$createStatement")
+            conn.prepareStatement(createStatement).use { it.execute() }
+            logger.info("table datahub.${table.tableName} have been created")
+        }
+    }
+
+
+    fun cleanDB() = db.useConnection { conn ->
+        models.forEach { table ->
+            logger.info("drop table for class ${table.javaClass.name}")
+            conn.prepareStatement("drop table datahub.${table.tableName}").use { it.execute() }
+            logger.info("table datahub.${table.tableName} have been drop")
+        }
+        logger.info("drop database datahub")
+        conn.prepareStatement("drop database datahub").use { it.execute() }
+        logger.info("database datahub have been drop")
+    }
+
+}
 
