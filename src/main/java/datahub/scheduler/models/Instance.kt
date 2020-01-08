@@ -27,6 +27,12 @@ data class Instance(
     val updateTime: LocalDateTime
 )
 
+@ColumnsDef("""
+    id              int             comment 'instance ID' auto_increment primary key,
+    is_remove       tinyint         comment 'whether instance is removed',
+    create_time     datetime        comment 'instance create time',
+    update_time     datetime        comment 'last update time'
+""")
 object Instances : BaseTable<Instance>("instance") {
     val id by int("id").primaryKey()
     val isRemove by boolean("is_remove")

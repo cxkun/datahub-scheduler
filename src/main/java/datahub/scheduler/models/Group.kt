@@ -17,6 +17,11 @@ import me.liuwj.ktorm.dsl.QueryRowSet
 import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
+/**
+ *  Table of privilege groups, a user might belong to a set of privilege groups
+ */
+
+
 data class Group(
     val id: Int,
     val name: String,
@@ -25,6 +30,13 @@ data class Group(
     val updateTime: LocalDateTime
 )
 
+@ColumnsDef("""
+    id              int             comment 'group ID' auto_increment primary key,
+    name            varchar(64)     comment 'group name',
+    is_remove       tinyint         comment 'whether group is removed',
+    create_time     datetime        comment 'task create time',
+    update_time     datetime        comment 'last update time'
+""")
 object Groups : BaseTable<Group>("group") {
     val id by int("id").primaryKey()
     val name by varchar("name")

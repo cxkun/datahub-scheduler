@@ -23,16 +23,29 @@ data class User(
     val groupIds: Set<Int>,
     val name: String,
     val email: String,
+    val password: String,
     val isRemove: Boolean,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime
 )
 
+@ColumnsDef("""
+    id              int             comment 'user ID' auto_increment primary key,
+    group_ids       text            comment 'list of group ID which user affiliate',
+    name            varchar(256)    comment 'user name',
+    email           varchar(256)    comment 'email, also use for login',
+    password        varchar(256)    comment 'encrypted password for login',
+    is_remove       tinyint         comment 'whether user is removed',
+    create_time     datetime        comment 'user create time',
+    update_time     datetime        comment 'last update time',
+    key idx_name(is_remove, name)
+""")
 object Users : BaseTable<User>("user") {
     val id by int("id").primaryKey()
     val groupIds by json("group_ids", typeRef<Set<Int>>())
     val name by varchar("name")
     val email by varchar("email")
+    val password by varchar("password")
     val isRemove by boolean("is_remove")
     val createTime by datetime("create_time")
     val updateTime by datetime("update_time")
@@ -44,9 +57,12 @@ object Users : BaseTable<User>("user") {
         groupIds = row[groupIds] ?: setOf(),
         name = row[name] ?: "",
         email = row[email] ?: "",
+        password = row[password] ?: "",
         isRemove = row[isRemove] ?: false,
         createTime = row[createTime] ?: defaultDatetime,
         updateTime = row[updateTime] ?: defaultDatetime
     )
+
+    val DDL get() = ""
 }
 

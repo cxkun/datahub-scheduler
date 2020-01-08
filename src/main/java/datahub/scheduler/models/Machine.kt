@@ -25,12 +25,25 @@ data class Machine(
     val ip: String,
     val cpuLoad: Int,
     val memLoad: Int,
-    val diskLoad: Int,
+    val diskUsage: Int,
     val isRemove: Boolean,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime
 )
 
+@ColumnsDef("""
+    id              int             comment 'machine ID' auto_increment primary key,
+    hostname        varchar(128)    comment 'hostname',
+    mac             varchar(17)     comment 'MAC address',
+    ip              varchar(15)     comment 'IP address',
+    cpu_load        int             comment 'cpu load, range [0, 100]%',
+    mem_load        int             comment 'memory load, range [0, 100]%',
+    disk_load       int             comment 'disk usage, range [0, 100]%',
+    is_remove       tinyint         comment 'whether machine is removed',
+    create_time     datetime        comment 'task create time',
+    update_time     datetime        comment 'last update time',
+    key idx_type(is_remove, hostname)
+""")
 object Machines : BaseTable<Machine>("machine") {
     val id by int("id").primaryKey()
     val hostname by varchar("hostname")
@@ -38,7 +51,7 @@ object Machines : BaseTable<Machine>("machine") {
     val ip by varchar("ip")
     val cpuLoad by int("cpu_load")
     val memLoad by int("mem_load")
-    val diskLoad by int("disk_load")
+    val diskUsage by int("disk_usage")
     val isRemove by boolean("is_remove")
     val createTime by datetime("create_time")
     val updateTime by datetime("update_time")
@@ -52,7 +65,7 @@ object Machines : BaseTable<Machine>("machine") {
         ip = row[ip] ?: "",
         cpuLoad = row[cpuLoad] ?: 0,
         memLoad = row[memLoad] ?: 0,
-        diskLoad = row[diskLoad] ?: 0,
+        diskUsage = row[diskUsage] ?: 0,
         isRemove = row[isRemove] ?: false,
         createTime = row[createTime] ?: defaultDatetime,
         updateTime = row[updateTime] ?: defaultDatetime

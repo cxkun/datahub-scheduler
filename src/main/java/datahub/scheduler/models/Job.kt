@@ -24,6 +24,12 @@ data class Job(
     val updateTime: LocalDateTime
 )
 
+@ColumnsDef("""
+    id              int             comment 'job ID' auto_increment primary key,
+    is_remove       tinyint         comment 'whether job is removed',
+    create_time     datetime        comment 'job create time',
+    update_time     datetime        comment 'last update time'
+""")
 object Jobs : BaseTable<Job>("job") {
     val id by int("id").primaryKey()
     val isRemove by boolean("is_remove")

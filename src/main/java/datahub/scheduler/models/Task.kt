@@ -33,11 +33,25 @@ data class Task(
     val updateTime: LocalDateTime
 )
 
-object Tasks : BaseTable<Task>("task") {
+@ColumnsDef("""
+    id              int             comment 'task ID' auto_increment primary key,
+    type            tinyint         comment 'task type',
+    name            varchar(512)    comment 'task name',
+    command         text            comment 'command to exec',
+    owner_id        int             comment 'owner user ID',
+    parent_ids      text            comment 'parent task id list',
+    children_ids    text            comment 'children task id list',
+    is_remove       tinyint         comment 'whether task is removed',
+    create_time     datetime        comment 'task create time',
+    update_time     datetime        comment 'last update time',
+    key idx_type(is_remove, type),
+    key idx_owner(is_remove, owner_id)
+""")
+object Tasks : BaseTable<Task>("tasks") {
     val id by int("id").primaryKey()
     val type by enum("type", typeRef<OperatorType>())
     val name by varchar("name")
-    val command by varchar("command")
+    val command by text("command")
     val ownerId by int("owner_id")
     val parentIds by json("parent_ids", typeRef<Set<Int>>())
     val childrenIds by json("children_ids", typeRef<Set<Int>>())
