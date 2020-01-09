@@ -11,8 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.scheduler
+package datahub.scheduler.ops
 
-fun main(args: Array<String>) {
+import datahub.scheduler.models.Task
+import org.quartz.JobExecutionContext
 
+class PythonOperator(task: Task) : Operator(task) {
+    override fun process(context: JobExecutionContext?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }

@@ -13,10 +13,12 @@
  */
 package datahub.scheduler.ops
 
+import datahub.scheduler.models.Task
 import org.quartz.JobExecutionContext
 
-class VirtualOperator : Operator() {
+class MailOperator(task: Task) : Operator(task) {
     override fun process(context: JobExecutionContext?) {
-        logger.info("this is an empty job")
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+// todo
 }

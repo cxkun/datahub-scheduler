@@ -13,9 +13,10 @@
  */
 package datahub.scheduler.ops
 
+import datahub.scheduler.models.Task
 import org.quartz.JobExecutionContext
 
-class PythonOperator : Operator() {
+class HiveOperator(task: Task) : Operator(task) {
     override fun process(context: JobExecutionContext?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }

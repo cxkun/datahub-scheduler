@@ -26,8 +26,12 @@ annotation class ColumnsDef(val columns: String)
 val BaseTable<*>.DDL: String
     get() = "${this.tableName}(${this::class.findAnnotation<ColumnsDef>()!!.columns})"
 
-
 fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
+
+fun BaseTable<*>.mockRecord(rowCount: Int) {
+
+}
+
 
 object SchemaUtils {
     private val logger = Logger.getLogger(this.javaClass)
@@ -65,6 +69,10 @@ object SchemaUtils {
         conn.prepareStatement("drop database datahub").use { it.execute() }
         logger.info("database datahub have been drop")
     }
+
+    fun rebuildDB() = cleanDB().also { buildDB() }
+
+    fun mockDB() = models.forEach { it.mockRecord(100) }
 
 }
 
