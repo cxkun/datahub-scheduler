@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.scheduler.models
+package datahub.models
 
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.schema.BaseTable
@@ -35,6 +35,8 @@ fun BaseTable<*>.mockRecord(rowCount: Int) {
 
 object SchemaUtils {
     private val logger = Logger.getLogger(this.javaClass)
+    private const val lightBlue = "\u001B[1;94m"
+    private const val end = "\u001B[m"
 
     // todo: read config from properties file
     private val db = Database.connect(
@@ -52,7 +54,7 @@ object SchemaUtils {
         logger.info("database datahub have been created")
         models.forEach { table ->
             val createStatement = table.DDL.withDB("datahub")
-            logger.info("create table for class ${table.javaClass.name}:\n$createStatement")
+            logger.info("create table for class ${table.javaClass.name}:\n" + lightBlue + createStatement + end)
             conn.prepareStatement(createStatement).use { it.execute() }
             logger.info("table datahub.${table.tableName} have been created")
         }

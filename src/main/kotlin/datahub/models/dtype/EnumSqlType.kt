@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.scheduler.models.dtype
+package datahub.models.dtype
 
 import me.liuwj.ktorm.schema.BaseTable
 import me.liuwj.ktorm.schema.SqlType
