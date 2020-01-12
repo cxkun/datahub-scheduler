@@ -13,7 +13,7 @@
  */
 package datahub.scheduler.ops
 
-import datahub.scheduler.models.Task
+import datahub.models.Task
 import org.quartz.JobExecutionContext
 
 class MailOperator(task: Task) : Operator(task) {
