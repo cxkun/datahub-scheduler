@@ -11,18 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.scheduler
+package datahub
 
 import com.xenomachina.argparser.ArgParser
-import datahub.scheduler.config.CliArgument
-import datahub.scheduler.config.ExecCommand
-import datahub.scheduler.models.*
+import datahub.config.CliArgument
+import datahub.config.ExecCommand
+import datahub.models.*
 import org.apache.log4j.Logger
 
 fun main(args: Array<String>) {
     val logger = Logger.getLogger("DataHub")
     logger.info(logo)
-    logger.info(color)
     ArgParser(args).parseInto(::CliArgument).run {
         when (exec) {
             ExecCommand.BuildDatabase -> SchemaUtils.buildDB()
