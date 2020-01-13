@@ -13,4 +13,48 @@
  */
 package datahub.api
 
-// todo
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+import org.springframework.context.annotation.Bean
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+import javax.servlet.*
+import javax.servlet.http.HttpServletRequest
+
+fun String.startsWithAny(vararg prefix: String) = prefix.any { this.startsWith(it) }
+
+@SpringBootApplication
+open class RestfulServer : WebMvcConfigurerAdapter(), Filter {
+
+
+    override fun init(cfg: FilterConfig) {}
+
+    override fun doFilter(req: ServletRequest, resp: ServletResponse, chain: FilterChain) {
+        req as HttpServletRequest
+        val notDispatch = req.servletPath.startsWithAny("/index.html", "/favicon.ico", "/dist/", "/api/")
+        if (notDispatch) {
+            chain.doFilter(req, resp)
+        } else {
+            req.getRequestDispatcher("${req.contextPath}/index.html").forward(req, resp)
+        }
+    }
+
+    override fun destroy() {}
+
+
+    override fun addResourceHandlers(registry: ResourceHandlerRegistry?) {
+        registry!!.addResourceHandler("/static/**").addResourceLocations("classpath:/static/")
+        super.addResourceHandlers(registry)
+    }
+
+
+    @Bean
+    open fun registerFilter(): FilterRegistrationBean {
+        val registration = FilterRegistrationBean()
+        registration.setName("RewriteFilter")
+        registration.filter = RestfulServer()
+        registration.addUrlPatterns("/*")
+        registration.order = 1
+        return registration
+    }
+}
