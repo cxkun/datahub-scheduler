@@ -30,7 +30,7 @@ data class Job(
     create_time     datetime        comment 'job create time',
     update_time     datetime        comment 'last update time'
 """)
-object Jobs : BaseTable<Job>("job") {
+object Jobs : BaseTable<Job>("jobs") {
     val id by int("id").primaryKey()
     val isRemove by boolean("is_remove")
     val createTime by datetime("create_time")

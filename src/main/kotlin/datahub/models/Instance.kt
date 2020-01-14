@@ -33,7 +33,7 @@ data class Instance(
     create_time     datetime        comment 'instance create time',
     update_time     datetime        comment 'last update time'
 """)
-object Instances : BaseTable<Instance>("instance") {
+object Instances : BaseTable<Instance>("instances") {
     val id by int("id").primaryKey()
     val isRemove by boolean("is_remove")
     val createTime by datetime("create_time")

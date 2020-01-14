@@ -44,7 +44,7 @@ data class Machine(
     update_time     datetime        comment 'last update time',
     key idx_type(is_remove, hostname)
 """)
-object Machines : BaseTable<Machine>("machine") {
+object Machines : BaseTable<Machine>("machines") {
     val id by int("id").primaryKey()
     val hostname by varchar("hostname")
     val mac by varchar("mac")

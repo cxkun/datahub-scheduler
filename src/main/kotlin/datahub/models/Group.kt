@@ -37,7 +37,7 @@ data class Group(
     create_time     datetime        comment 'task create time',
     update_time     datetime        comment 'last update time'
 """)
-object Groups : BaseTable<Group>("group") {
+object Groups : BaseTable<Group>("groups") {
     val id by int("id").primaryKey()
     val name by varchar("name")
     val isRemove by boolean("is_remove")

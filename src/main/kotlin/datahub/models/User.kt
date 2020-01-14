@@ -40,7 +40,7 @@ data class User(
     update_time     datetime        comment 'last update time',
     key idx_name(is_remove, name)
 """)
-object Users : BaseTable<User>("user") {
+object Users : BaseTable<User>("users") {
     val id by int("id").primaryKey()
     val groupIds by json("group_ids", typeRef<Set<Int>>())
     val name by varchar("name")
