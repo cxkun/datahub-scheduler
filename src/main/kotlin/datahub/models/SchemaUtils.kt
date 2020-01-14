@@ -50,7 +50,7 @@ object SchemaUtils {
 
     fun buildDB() = db.useConnection { conn ->
         logger.info("create database datahub")
-        conn.prepareStatement("create database if not exists datahub").use { it.execute() }
+        conn.prepareStatement("create database if not exists datahub default character set = 'utf8'").use { it.execute() }
         logger.info("database datahub have been created")
         models.forEach { table ->
             val createStatement = table.DDL.withDB("datahub")
