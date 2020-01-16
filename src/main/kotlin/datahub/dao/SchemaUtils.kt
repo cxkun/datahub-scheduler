@@ -11,32 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.models
+package datahub.dao
 
 import me.liuwj.ktorm.database.Database
-import me.liuwj.ktorm.schema.BaseTable
+import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import kotlin.reflect.full.findAnnotation
-
-@Target(AnnotationTarget.CLASS)
-@Retention(value = AnnotationRetention.RUNTIME)
-annotation class ColumnsDef(val columns: String)
-
-
-val BaseTable<*>.DDL: String
-    get() = "${this.tableName}(${this::class.findAnnotation<ColumnsDef>()!!.columns})"
-
-fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
-
-fun BaseTable<*>.mockRecord(rowCount: Int) {
-
-}
 
 
 object SchemaUtils {
     private val logger = Logger.getLogger(this.javaClass)
     private const val lightBlue = "\u001B[1;94m"
     private const val end = "\u001B[m"
+
+    val Table<*>.DDL: String
+        get() = "${this.tableName}(${this::class.findAnnotation<ColumnsDef>()!!.columns})"
+
+    fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
+
+    fun Table<*>.mockRecord(rowCount: Int) {
+        TODO()
+    }
 
     // todo: read config from properties file
     private val db = Database.connect(
@@ -64,7 +59,7 @@ object SchemaUtils {
     fun cleanDB() = db.useConnection { conn ->
         models.forEach { table ->
             logger.info("drop table for class ${table.javaClass.name}")
-            conn.prepareStatement("drop table datahub.${table.tableName}").use { it.execute() }
+            conn.prepareStatement("drop table if exists datahub.${table.tableName}").use { it.execute() }
             logger.info("table datahub.${table.tableName} have been drop")
         }
         logger.info("drop database datahub")
@@ -74,7 +69,9 @@ object SchemaUtils {
 
     fun rebuildDB() = cleanDB().also { buildDB() }
 
-    fun mockDB() = models.forEach { it.mockRecord(100) }
+    fun mockDB() = models.forEach {
+        it.mockRecord(100)
+    }
 
 }
 

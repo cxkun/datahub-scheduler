@@ -13,36 +13,19 @@
  */
 package datahub.models
 
-import me.liuwj.ktorm.dsl.QueryRowSet
+import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
-data class Job(
-    val id: Int,
-    val isRemove: Boolean,
-    val createTime: LocalDateTime,
-    val updateTime: LocalDateTime
-)
+interface Job : Entity<Job> {
+    companion object : Entity.Factory<Job>()
 
-@ColumnsDef("""
-    id              int             comment 'job ID' auto_increment primary key,
-    is_remove       tinyint         comment 'whether job is removed',
-    create_time     datetime        comment 'job create time',
-    update_time     datetime        comment 'last update time'
-""")
-object Jobs : BaseTable<Job>("jobs") {
-    val id by int("id").primaryKey()
-    val isRemove by boolean("is_remove")
-    val createTime by datetime("create_time")
-    val updateTime by datetime("update_time")
-
-    val defaultDatetime = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
-
-    override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = Job(
-        id = row[id] ?: 0,
-        isRemove = row[isRemove] ?: false,
-        createTime = row[createTime] ?: defaultDatetime,
-        updateTime = row[updateTime] ?: defaultDatetime
-    )
+    val id: Int
+    var taskId: Int
+    var isRemove: Boolean
+    var createTime: LocalDateTime
+    var updateTime: LocalDateTime
 }
+
+
 

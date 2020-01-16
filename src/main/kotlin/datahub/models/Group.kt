@@ -13,7 +13,7 @@
  */
 package datahub.models
 
-import me.liuwj.ktorm.dsl.QueryRowSet
+import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
@@ -22,37 +22,15 @@ import java.time.LocalDateTime
  */
 
 
-data class Group(
-    val id: Int,
-    val name: String,
-    val isRemove: Boolean,
-    val createTime: LocalDateTime,
-    val updateTime: LocalDateTime
-)
+interface Group : Entity<Group> {
+    companion object : Entity.Factory<Group>()
 
-@ColumnsDef("""
-    id              int             comment 'group ID' auto_increment primary key,
-    name            varchar(64)     comment 'group name',
-    is_remove       tinyint         comment 'whether group is removed',
-    create_time     datetime        comment 'task create time',
-    update_time     datetime        comment 'last update time'
-""")
-object Groups : BaseTable<Group>("groups") {
-    val id by int("id").primaryKey()
-    val name by varchar("name")
-    val isRemove by boolean("is_remove")
-    val createTime by datetime("create_time")
-    val updateTime by datetime("update_time")
-
-    val defaultDatetime = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
-
-    override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = Group(
-        id = row[id] ?: 0,
-        name = row[name] ?: "",
-        isRemove = row[isRemove] ?: false,
-        createTime = row[createTime] ?: defaultDatetime,
-        updateTime = row[updateTime] ?: defaultDatetime
-    )
+    val id: Int
+    var name: String
+    var isRemove: Boolean
+    var createTime: LocalDateTime
+    var updateTime: LocalDateTime
 }
+
 
 

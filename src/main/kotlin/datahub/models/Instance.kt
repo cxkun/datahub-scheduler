@@ -13,39 +13,19 @@
  */
 package datahub.models
 
-import me.liuwj.ktorm.dsl.QueryRowSet
-import me.liuwj.ktorm.schema.BaseTable
-import me.liuwj.ktorm.schema.boolean
-import me.liuwj.ktorm.schema.datetime
-import me.liuwj.ktorm.schema.int
+import me.liuwj.ktorm.entity.Entity
+import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
-data class Instance(
-    val id: Int,
-    val isRemove: Boolean,
-    val createTime: LocalDateTime,
-    val updateTime: LocalDateTime
-)
+interface Instance : Entity<Instance> {
+    companion object : Entity.Factory<Instance>()
 
-@ColumnsDef("""
-    id              int             comment 'instance ID' auto_increment primary key,
-    is_remove       tinyint         comment 'whether instance is removed',
-    create_time     datetime        comment 'instance create time',
-    update_time     datetime        comment 'last update time'
-""")
-object Instances : BaseTable<Instance>("instances") {
-    val id by int("id").primaryKey()
-    val isRemove by boolean("is_remove")
-    val createTime by datetime("create_time")
-    val updateTime by datetime("update_time")
-
-    val defaultDatetime = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
-
-    override fun doCreateEntity(row: QueryRowSet, withReferences: Boolean) = Instance(
-        id = row[id] ?: 0,
-        isRemove = row[isRemove] ?: false,
-        createTime = row[createTime] ?: defaultDatetime,
-        updateTime = row[updateTime] ?: defaultDatetime
-    )
+    val id: Int
+    var jobId: Int
+    var isRemove: Boolean
+    var createTime: LocalDateTime
+    var updateTime: LocalDateTime
 }
+
+
 

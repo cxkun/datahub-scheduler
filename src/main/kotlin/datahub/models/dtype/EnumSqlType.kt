@@ -22,7 +22,10 @@ import java.sql.Types
 
 
 // Will remove when ktorm version 2.7 release
-fun <E : Any, C : Enum<C>> BaseTable<E>.enum(name: String, typeRef: TypeReference<C>): BaseTable<E>.ColumnRegistration<C> {
+fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
+    name: String,
+    typeRef: TypeReference<C>
+): BaseTable<E>.ColumnRegistration<C> {
     return registerColumn(name, EnumSqlType(typeRef.referencedType as Class<C>))
 }
 
