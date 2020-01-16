@@ -13,21 +13,49 @@
  */
 package datahub.api
 
+import com.fasterxml.jackson.databind.Module
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
+import me.liuwj.ktorm.jackson.KtormModule
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+import java.time.format.DateTimeFormatter
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
 
-fun String.startsWithAny(vararg prefix: String) = prefix.any { this.startsWith(it) }
 
 @SpringBootApplication
+@Configuration
 open class RestfulServer : WebMvcConfigurerAdapter(), Filter {
 
+    @Bean
+    open fun ormModule(): Module = KtormModule()
 
-    override fun init(cfg: FilterConfig) {}
+    @Bean
+    open fun datetimeFormat() = Jackson2ObjectMapperBuilderCustomizer {
+        it.simpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        it.serializers(LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+        it.serializers(LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+    }
+
+    @Bean
+    open fun registerFilter() = FilterRegistrationBean(RestfulServer()).also {
+        it.setName("RewriteFilter")
+        it.addUrlPatterns("/*")
+        it.order = 1
+    }
+
+    private fun String.startsWithAny(vararg prefix: String) = prefix.any { this.startsWith(it) }
+
+    override fun init(cfg: FilterConfig) {
+        ObjectMapper().findAndRegisterModules()
+    }
 
     override fun doFilter(req: ServletRequest, resp: ServletResponse, chain: FilterChain) {
         req as HttpServletRequest
@@ -41,20 +69,9 @@ open class RestfulServer : WebMvcConfigurerAdapter(), Filter {
 
     override fun destroy() {}
 
-
     override fun addResourceHandlers(registry: ResourceHandlerRegistry?) {
-        registry!!.addResourceHandler("/static/**").addResourceLocations("classpath:/static/")
+        registry!!.addResourceHandler("/static/**")
+            .addResourceLocations("classpath:/static/")
         super.addResourceHandlers(registry)
-    }
-
-
-    @Bean
-    open fun registerFilter(): FilterRegistrationBean {
-        val registration = FilterRegistrationBean()
-        registration.setName("RewriteFilter")
-        registration.filter = RestfulServer()
-        registration.addUrlPatterns("/*")
-        registration.order = 1
-        return registration
     }
 }
