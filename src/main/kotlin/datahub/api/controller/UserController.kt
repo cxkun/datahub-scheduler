@@ -41,7 +41,7 @@ class UserController {
     fun listing(page: Int = 1, pageSize: Int = Int.MAX_VALUE): ResponseData {
         val users = Users.select().where { Users.isRemove eq false }
         val count = users.totalRecords
-        return Response.Success.withData(mapOf(
+        return Response.Success.WithData(mapOf(
             "count" to count,
             "users" to users.limit(Page.offset(page, pageSize), pageSize).map { Users.createEntity(it) }
         ))
@@ -51,9 +51,9 @@ class UserController {
     fun find(@PathVariable id: Int): ResponseData {
         val user = Users.findById(id)
         return if (user == null || user.isRemove) {
-            Response.Failed.dataNotFound("user $id")
+            Response.Failed.DataNotFound("user $id")
         } else {
-            Response.Success.withData("user" to user)
+            Response.Success.WithData("user" to user)
         }
     }
 
@@ -73,7 +73,7 @@ class UserController {
             this.updateTime = LocalDateTime.now()
         }
         Users.add(user)
-        return Response.Success.withData("user" to user)
+        return Response.Success.WithData("user" to user)
     }
 
 
@@ -86,7 +86,7 @@ class UserController {
                email: String): ResponseData {
         val user = Users.findById(id)
         return if (user == null || user.isRemove) {
-            Response.Failed.dataNotFound("user $id")
+            Response.Failed.DataNotFound("user $id")
         } else {
             user.name = username
             user.password = MD5.encrypt(password)
@@ -94,7 +94,7 @@ class UserController {
             user.email = email
             user.updateTime = LocalDateTime.now()
             user.flushChanges()
-            Response.Success.update("user $username")
+            Response.Success.Update("user $username")
         }
     }
 
@@ -102,11 +102,11 @@ class UserController {
     fun remove(@PathVariable id: Int): ResponseData {
         val user = Users.findById(id)
         return if (user == null || user.isRemove) {
-            Response.Failed.dataNotFound("user $id")
+            Response.Failed.DataNotFound("user $id")
         } else {
             user.isRemove = true
             user.flushChanges()
-            Response.Success.remove("user ${user.name}")
+            Response.Success.Remove("user ${user.name}")
         }
     }
 
