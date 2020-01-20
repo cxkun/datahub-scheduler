@@ -31,7 +31,7 @@ import org.apache.shiro.subject.PrincipalCollection
  * @since 1.0.0
  */
 class ShiroRealm : AuthorizingRealm() {
-    override fun doGetAuthenticationInfo(authToken: AuthenticationToken?): AuthenticationInfo {
+    override fun doGetAuthenticationInfo(authToken: AuthenticationToken?): SimpleAuthenticationInfo {
         val token = authToken?.credentials.toString()
         val user = Users.findOne { it.name eq Jwt.getUserName(token).orEmpty() }
         if (Jwt.verify(token, user?.name.orEmpty(), user?.password.orEmpty())) {
