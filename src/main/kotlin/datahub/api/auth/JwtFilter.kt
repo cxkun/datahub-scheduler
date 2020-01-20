@@ -30,7 +30,7 @@ class JwtFilter : BasicHttpAuthenticationFilter() {
     private val mather = AntPathMatcher()
 
     override fun isAccessAllowed(req: ServletRequest?, resp: ServletResponse?, mappedValue: Any?) = when {
-        listOf("/static/**", "/login", "/api/user/login").any {
+        listOf("/static/**", "/login", "/api/login").any {
             mather.match(it, req.asHttp.requestURI)
         } -> true
         isLoginAttempt(req, resp) -> executeLogin(req, resp)
