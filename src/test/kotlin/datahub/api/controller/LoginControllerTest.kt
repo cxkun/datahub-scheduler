@@ -30,7 +30,7 @@ class LoginControllerTest {
 
     @Test
     fun login() {
-        val loginSuccess = postman.post(mapOf(
+        val loginSuccess = postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "root"
         ))
@@ -46,7 +46,7 @@ class LoginControllerTest {
         Assertions.assertEquals(Jwt.getUserName(token), "root")
 
 
-        val loginFailed = postman.post(mapOf(
+        val loginFailed = postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "roo"
         ))
