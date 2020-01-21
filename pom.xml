@@ -76,6 +76,11 @@
             <version>2.6</version>
         </dependency>
         <dependency>
+            <groupId>me.liuwj.ktorm</groupId>
+            <artifactId>ktorm-support-mysql</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>1.1.20</version>
