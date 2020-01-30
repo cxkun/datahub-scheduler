@@ -13,7 +13,7 @@
  */
 package datahub.scheduler.tracker
 
-import datahub.models.Tasks
+import datahub.dao.Tasks
 import datahub.scheduler.ops.OperatorType
 import datahub.scheduler.ops.VirtualOperator
 import me.liuwj.ktorm.dsl.eq
@@ -23,6 +23,10 @@ import org.quartz.Scheduler
 import org.quartz.impl.StdSchedulerFactory
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 class JobTracker {
     private val logger: Logger = Logger.getLogger(JobTracker::class.java)
     val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
