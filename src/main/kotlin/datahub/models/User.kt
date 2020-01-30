@@ -13,12 +13,13 @@
  */
 package datahub.models
 
-import me.liuwj.ktorm.dsl.QueryRowSet
 import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.jackson.json
-import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 interface User : Entity<User> {
     companion object : Entity.Factory<User>()
 

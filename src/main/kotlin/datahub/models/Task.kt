@@ -13,14 +13,14 @@
  */
 package datahub.models
 
-import datahub.models.dtype.enum
 import datahub.scheduler.ops.OperatorType
-import me.liuwj.ktorm.dsl.QueryRowSet
 import me.liuwj.ktorm.entity.Entity
-import me.liuwj.ktorm.jackson.json
-import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 interface Task : Entity<Task> {
     companion object : Entity.Factory<Task>()
 

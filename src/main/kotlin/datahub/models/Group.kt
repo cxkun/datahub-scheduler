@@ -18,10 +18,10 @@ import me.liuwj.ktorm.schema.*
 import java.time.LocalDateTime
 
 /**
- *  Table of privilege groups, a user might belong to a set of privilege groups
+ * Table of privilege groups, a user might belong to a set of privilege groups
+ * @author Jensen Qi
+ * @since 1.0.0
  */
-
-
 interface Group : Entity<Group> {
     companion object : Entity.Factory<Group>()
 
