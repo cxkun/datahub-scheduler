@@ -17,10 +17,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Suppress("UNCHECKED_CAST")
 class LoginControllerTest {
     @Autowired
     lateinit var template: TestRestTemplate
-    lateinit var postman: Postman
+    private lateinit var postman: Postman
 
     @BeforeAll
     fun rebuildDB() {
@@ -30,6 +31,7 @@ class LoginControllerTest {
 
     @Test
     fun login() {
+        // should login success when password is correct
         val loginSuccess = postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "root"
@@ -45,7 +47,7 @@ class LoginControllerTest {
         token as String
         Assertions.assertEquals(Jwt.getUserName(token), "root")
 
-
+        // should login failed when password is wrong
         val loginFailed = postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "roo"
@@ -55,6 +57,4 @@ class LoginControllerTest {
         Assertions.assertEquals(failedBody["status"], "failed")
         Assertions.assertEquals(failedBody["error"], "login failed")
     }
-
-
 }
