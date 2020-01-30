@@ -20,8 +20,10 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Types
 
-
-// Will remove when ktorm version 2.7 release
+/** enum data type, will remove when ktorm version 2.7 release
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 fun <E : Any, C : Enum<C>> BaseTable<E>.enum(
     name: String,
     typeRef: TypeReference<C>

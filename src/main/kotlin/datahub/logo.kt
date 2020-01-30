@@ -13,6 +13,10 @@
  */
 package datahub
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 const val yellowBg = "\u001B[1;43;97m"
 const val greyBg = "\u001B[1;100;97m"
 const val end = "\u001B[m\n"

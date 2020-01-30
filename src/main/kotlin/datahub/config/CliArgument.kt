@@ -17,6 +17,10 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import java.lang.Exception
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 class CliArgument(parser: ArgParser) {
     val exec by parser.storing("--exec", help = "exec command [build_db, clean_db, master, worker]") {
         when (this) {
@@ -24,6 +28,7 @@ class CliArgument(parser: ArgParser) {
             "clean_db" -> ExecCommand.CleanDatabase
             "rebuild_db" -> ExecCommand.RebuildDatabase
             "mock_db" -> ExecCommand.MockDatabase
+            "webserver" -> ExecCommand.WebServer
             "master" -> ExecCommand.Master
             "worker" -> ExecCommand.Worker
             else -> throw Exception("unsupported command $this")

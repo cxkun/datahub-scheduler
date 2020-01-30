@@ -13,12 +13,16 @@
  */
 package datahub.scheduler.ops
 
+import datahub.dao.Tasks
 import datahub.models.Task
-import datahub.models.Tasks
 import me.liuwj.ktorm.entity.findListByIds
 import org.apache.log4j.Logger
 import org.quartz.*
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 abstract class Operator(private val task: Task) : org.quartz.Job {
 
     val logger = Logger.getLogger(this.javaClass)!!

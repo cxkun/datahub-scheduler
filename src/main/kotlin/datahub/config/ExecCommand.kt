@@ -13,11 +13,16 @@
  */
 package datahub.config
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 enum class ExecCommand {
     BuildDatabase,
     CleanDatabase,
     RebuildDatabase,
     MockDatabase,
+    WebServer,
     Master,
     Worker
 }

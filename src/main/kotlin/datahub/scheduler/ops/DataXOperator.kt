@@ -16,6 +16,10 @@ package datahub.scheduler.ops
 import datahub.models.Task
 import org.quartz.JobExecutionContext
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 class DataXOperator(task: Task) : Operator(task) {
     override fun process(context: JobExecutionContext?) {
         logger.info("start dataX job")

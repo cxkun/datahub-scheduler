@@ -22,6 +22,10 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 class BashOperator(task: Task, command: String = "echo ") : Operator(task) {
     private val EXIT_VALUE = 0
     private val commandLine: CommandLine = CommandLine("bash")

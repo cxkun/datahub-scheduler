@@ -13,6 +13,16 @@
  */
 package datahub.scheduler.ops
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 enum class OperatorType {
-    Unsupported, DataX, Bash, Hive, Mail, Python, Virtual
+    Unsupported,
+    DataX,
+    Bash,
+    Hive,
+    Mail,
+    Python,
+    Virtual
 }
