@@ -20,6 +20,10 @@ import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              bigint unsigned comment 'task ID' auto_increment primary key,
     type            varchar(32)     comment 'task type',

@@ -16,6 +16,10 @@ package datahub.dao
 import datahub.models.Group
 import me.liuwj.ktorm.schema.*
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              int unsigned    comment 'group ID' auto_increment primary key,
     name            varchar(64)     comment 'group name',

@@ -17,6 +17,10 @@ import datahub.models.Machine
 import me.liuwj.ktorm.schema.*
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              int unsigned    comment 'machine ID' auto_increment primary key,
     hostname        varchar(128)    comment 'hostname',

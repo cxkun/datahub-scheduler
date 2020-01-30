@@ -13,7 +13,10 @@
  */
 package datahub.dao
 
-
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @Target(AnnotationTarget.CLASS)
 @Retention(value = AnnotationRetention.RUNTIME)
 annotation class ColumnsDef(val columns: String)

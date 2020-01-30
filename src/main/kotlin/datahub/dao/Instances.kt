@@ -20,6 +20,10 @@ import me.liuwj.ktorm.schema.datetime
 import me.liuwj.ktorm.schema.int
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              bigint unsigned comment 'instance ID' auto_increment primary key,
     job_id          bigint unsigned comment 'job ID',

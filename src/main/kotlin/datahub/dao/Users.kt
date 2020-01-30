@@ -18,6 +18,10 @@ import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              int unsigned    comment 'user ID' auto_increment primary key,
     group_ids       text            comment 'list of group ID which user affiliate',

@@ -19,7 +19,10 @@ import me.liuwj.ktorm.schema.boolean
 import me.liuwj.ktorm.schema.datetime
 import me.liuwj.ktorm.schema.int
 
-
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ColumnsDef("""
     id              bigint unsigned comment 'job ID' auto_increment primary key,
     task_id         bigint unsigned comment 'task ID',

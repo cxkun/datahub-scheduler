@@ -13,25 +13,35 @@
  */
 package datahub.dao
 
+import datahub.api.auth.MD5
+import datahub.models.Group
+import datahub.models.User
 import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.entity.add
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
+import org.reflections.Reflections
+import java.time.LocalDateTime
 import kotlin.reflect.full.findAnnotation
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 object SchemaUtils {
     private val logger = Logger.getLogger(this.javaClass)
     private const val lightBlue = "\u001B[1;94m"
     private const val end = "\u001B[m"
+    private val models = Reflections("datahub.dao").getSubTypesOf(Table::class.java).map {
+        it.getField("INSTANCE").get(it) as Table<*>
+    }
 
-    val Table<*>.DDL: String
+    private val Table<*>.DDL: String
         get() = "${this.tableName}(${this::class.findAnnotation<ColumnsDef>()!!.columns})"
 
     fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
 
-    fun Table<*>.mockRecord(rowCount: Int) {
-        TODO()
-    }
 
     // todo: read config from properties file
     private val db = Database.connect(
@@ -41,7 +51,6 @@ object SchemaUtils {
         password = "root"
     )
 
-    private val models = listOf(Tasks, Groups, Instances, Jobs, Machines, Users)
 
     fun buildDB() = db.useConnection { conn ->
         logger.info("create database datahub")
@@ -53,6 +62,30 @@ object SchemaUtils {
             conn.prepareStatement(createStatement).use { it.execute() }
             logger.info("table datahub.${table.tableName} have been created")
         }
+        conn.prepareStatement("use datahub").use { it.execute() }
+        Database.connect(
+            url = "jdbc:mysql://localhost:3306/datahub",
+            driver = "com.mysql.jdbc.Driver",
+            user = "root",
+            password = "root"
+        )
+
+        val group = Group {
+            name = "root"
+            isRemove = false
+            createTime = LocalDateTime.now()
+            updateTime = LocalDateTime.now()
+        }
+        val user = User {
+            this.groupIds = setOf(group.id)
+            this.name = "root"
+            this.email = "root@datahub.com"
+            this.password = MD5.encrypt("root")
+            this.isRemove = false
+            this.createTime = LocalDateTime.now()
+            this.updateTime = LocalDateTime.now()
+        }
+        Users.add(user)
     }
 
 
@@ -63,14 +96,14 @@ object SchemaUtils {
             logger.info("table datahub.${table.tableName} have been drop")
         }
         logger.info("drop database datahub")
-        conn.prepareStatement("drop database datahub").use { it.execute() }
+        conn.prepareStatement("drop database if exists datahub").use { it.execute() }
         logger.info("database datahub have been drop")
     }
 
     fun rebuildDB() = cleanDB().also { buildDB() }
 
     fun mockDB() = models.forEach {
-        it.mockRecord(100)
+        TODO()
     }
 
 }
