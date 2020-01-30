@@ -16,8 +16,11 @@ package datahub.api.controller
 import datahub.api.Response
 import datahub.api.ResponseData
 import datahub.api.utils.Page
+import datahub.dao.Files
 import datahub.dao.Groups
+import datahub.models.File
 import datahub.models.Group
+import datahub.models.dtype.FileType
 import me.liuwj.ktorm.dsl.eq
 import me.liuwj.ktorm.dsl.limit
 import me.liuwj.ktorm.dsl.select
@@ -54,7 +57,7 @@ class GroupController {
         return if (group == null || group.isRemove) {
             Response.Failed.DataNotFound("group $id")
         } else {
-            Response.Success.WithData("group" to group)
+            Response.Success.WithData(mapOf("group" to group))
         }
     }
 
@@ -67,7 +70,19 @@ class GroupController {
             this.updateTime = LocalDateTime.now()
         }
         Groups.add(group)
-        return Response.Success.WithData("group" to group)
+        val file = File {
+            this.groupId = group.id
+            this.ownerId = 1 // root user
+            this.name = group.name
+            this.type = FileType.Dir
+            this.version = null
+            this.parentId = null
+            this.isRemove = false
+            this.createTime = LocalDateTime.now()
+            this.updateTime = LocalDateTime.now()
+        }
+        Files.add(file)
+        return Response.Success.WithData(mapOf("group" to group, "file" to file))
     }
 
     @PutMapping("{id}")
@@ -78,7 +93,7 @@ class GroupController {
         } else {
             group.name = name
             group.flushChanges()
-            Response.Success.WithData("group has been update")
+            Response.Success.Update("group ${group.id}")
         }
     }
 
@@ -90,7 +105,7 @@ class GroupController {
         } else {
             group.isRemove = true
             group.flushChanges()
-            Response.Success.WithData("group has been remove")
+            Response.Success.Remove("group ${group.id}")
         }
     }
 
