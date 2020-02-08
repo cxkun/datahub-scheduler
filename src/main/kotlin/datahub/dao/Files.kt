@@ -15,7 +15,6 @@ package datahub.dao
 
 import datahub.models.File
 import datahub.models.dtype.FileType
-import datahub.models.dtype.enum
 import me.liuwj.ktorm.schema.*
 
 /**

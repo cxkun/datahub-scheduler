@@ -14,7 +14,6 @@
 package datahub.dao
 
 import datahub.models.Task
-import datahub.models.dtype.enum
 import datahub.scheduler.ops.OperatorType
 import me.liuwj.ktorm.jackson.json
 import me.liuwj.ktorm.schema.*
