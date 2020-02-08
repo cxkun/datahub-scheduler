@@ -13,7 +13,7 @@
  */
 package datahub.api.controller
 
-import datahub.api.Postman
+import datahub.tools.Postman
 import datahub.api.auth.Jwt
 import datahub.dao.SchemaUtils
 import org.junit.jupiter.api.Assertions
@@ -44,30 +44,24 @@ class LoginControllerTest {
 
     @Test
     fun login() {
-        // should login success when password is correct
-        val loginSuccess = postman.post("/api/login", mapOf(
+        with(postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "root"
-        ))
-        Assertions.assertEquals(loginSuccess.statusCode, HttpStatus.OK)
-        val successBody = loginSuccess.body ?: mapOf()
-        Assertions.assertEquals(successBody["status"], "success")
-        val data = successBody["data"]
-        Assertions.assertTrue(data != null)
-        data as Map<String, String>
-        val token = data["token"]
-        Assertions.assertTrue(token is String)
-        token as String
-        Assertions.assertEquals(Jwt.getUserName(token), "root")
+        ))) {
+            Assertions.assertEquals(HttpStatus.OK, statusCode)
+            Assertions.assertEquals("success", body?.get("status"))
+            with(body?.get("data") as Map<String, String>) {
+                Assertions.assertEquals("root", Jwt.getUserName(get("token") ?: ""))
+            }
+        }
 
-        // should login failed when password is wrong
-        val loginFailed = postman.post("/api/login", mapOf(
+        with(postman.post("/api/login", mapOf(
             "username" to "root",
-            "password" to "roo"
-        ))
-        val failedBody = loginFailed.body ?: mapOf()
-        Assertions.assertEquals(loginFailed.statusCode, HttpStatus.OK)
-        Assertions.assertEquals(failedBody["status"], "failed")
-        Assertions.assertEquals(failedBody["error"], "login failed")
+            "password" to "wrong password"
+        ))) {
+            Assertions.assertEquals(HttpStatus.OK, statusCode)
+            Assertions.assertEquals("failed", body?.get("status"))
+            Assertions.assertEquals("login failed", body?.get("error"))
+        }
     }
 }
