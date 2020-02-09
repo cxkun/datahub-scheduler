@@ -33,14 +33,17 @@ class Postman(private val template: TestRestTemplate) {
         return response
     }
 
-    fun post(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
-        val map = LinkedMultiValueMap<String, Any>().also {
-            args.forEach { (key, value) ->
+    private fun Map<String, Any>.toRequestParam(): HttpEntity<MultiValueMap<String, Any>> {
+        val params = LinkedMultiValueMap<String, Any>().also {
+            this.forEach { (key, value) ->
                 it.add(key, value)
             }
         }
-        val req = HttpEntity<MultiValueMap<String, Any>>(map, header)
-        val response = template.postForEntity(url, req, Map::class.java)!!
+        return HttpEntity<MultiValueMap<String, Any>>(params, header)
+    }
+
+    fun post(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+        val response = template.postForEntity(url, args.toRequestParam(), Map::class.java)!!
         return uncheckedCast(response)
     }
 
@@ -50,16 +53,22 @@ class Postman(private val template: TestRestTemplate) {
         val argString = args.map { (key, value) ->
             "$key=$value"
         }.joinToString("&")
-        val response = template.exchange("${url}?$argString", HttpMethod.GET, HttpEntity<Object>(header), Map::class.java)
+        val response = template.exchange("${url}?$argString", HttpMethod.GET, HttpEntity<Any>(header), Map::class.java)
         return uncheckedCast(response)
     }
 
-    fun delete() {
-
+    fun delete(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+        val response = template.exchange(url, HttpMethod.DELETE, args.toRequestParam(), Map::class.java)
+        return uncheckedCast(response)
     }
 
-    fun put() {
+    fun delete(url: String): ResponseEntity<Map<String, Any>> {
+        return delete(url, mapOf())
+    }
 
+    fun put(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+        val response = template.exchange(url, HttpMethod.PUT, args.toRequestParam(), Map::class.java)
+        return uncheckedCast(response)
     }
 
     fun login() {
