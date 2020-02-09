@@ -20,8 +20,7 @@ import datahub.api.utils.Page
 import datahub.dao.Users
 import datahub.models.User
 import me.liuwj.ktorm.dsl.*
-import me.liuwj.ktorm.entity.add
-import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.entity.*
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -38,63 +37,97 @@ class UserController {
 
     @GetMapping
     @ResponseBody
-    fun listing(page: Int = 1, pageSize: Int = Int.MAX_VALUE): ResponseData {
-        val users = Users.select().where { Users.isRemove eq false }
+    fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
+                @RequestParam(required = false, defaultValue = "9999") pageSize: Int): ResponseData {
+        val users = Users.select(
+            Users.id,
+            Users.groupIds,
+            Users.name,
+            Users.email,
+            Users.createTime,
+            Users.updateTime
+        ).where { Users.isRemove eq false }
         val count = users.totalRecords
         return Response.Success.WithData(mapOf(
             "count" to count,
-            "users" to users.limit(Page.offset(page, pageSize), pageSize).map { Users.createEntity(it) }
+            "users" to users.orderBy(Users.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
+                Users.createEntity(it)
+            }
         ))
     }
 
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        val user = Users.findById(id)
-        return if (user == null || user.isRemove) {
+        val user = Users.select(
+            Users.id,
+            Users.groupIds,
+            Users.name,
+            Users.email,
+            Users.createTime,
+            Users.updateTime
+        ).where { Users.id eq id and (Users.isRemove eq false) }.map {
+            Users.createEntity(it)
+        }.firstOrNull()
+        return if (user == null) {
             Response.Failed.DataNotFound("user $id")
         } else {
-            Response.Success.WithData("user" to user)
+            Response.Success.WithData(mapOf("user" to user))
         }
     }
 
     @PostMapping
     @ResponseBody
-    fun create(@NotBlank(message = "{required}") username: String,
+    fun create(@NotBlank(message = "{required}") name: String,
                @NotBlank(message = "{required}") password: String,
-               @NotBlank(message = "{required}") groupIds: Set<Int>,
+               @RequestParam(required = true) groupIds: ArrayList<Int>,
                @NotBlank(message = "{required}") email: String): ResponseData {
         val user = User {
-            this.name = username
+            this.name = name
+            this.groupIds = groupIds.toSet()
             this.password = MD5.encrypt(password)
-            this.groupIds = groupIds
             this.email = email
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
         Users.add(user)
-        return Response.Success.WithData("user" to user)
+        return Response.Success.WithData(mapOf("userId" to user.id))
     }
 
 
     @PutMapping("{id}")
     @ResponseBody
-    fun update(@PathVariable id: String,
-               username: String,
-               password: String,
-               groupIds: Set<Int>,
-               email: String): ResponseData {
+    fun update(@PathVariable id: Int,
+               @RequestParam(required = false) name: String?,
+               @RequestParam(required = false) password: String?,
+               @RequestParam(required = false) groupIds: ArrayList<Int>?,
+               @RequestParam(required = false) email: String?): ResponseData {
         val user = Users.findById(id)
         return if (user == null || user.isRemove) {
             Response.Failed.DataNotFound("user $id")
         } else {
-            user.name = username
-            user.password = MD5.encrypt(password)
-            user.groupIds = groupIds
-            user.email = email
-            user.updateTime = LocalDateTime.now()
+            var update = false
+            if (name != null) {
+                user.name = name
+                update = true
+            }
+            if (password != null) {
+                user.password = MD5.encrypt(password)
+                update = true
+            }
+            if (groupIds != null) {
+                user.groupIds = groupIds.toSet()
+                update = true
+            }
+            if (email != null) {
+                user.email = email
+                update = true
+            }
+            if (update) {
+                user.updateTime = LocalDateTime.now()
+            }
             user.flushChanges()
-            Response.Success.Update("user $username")
+            Response.Success.Update("user $id")
         }
     }
 
@@ -106,7 +139,7 @@ class UserController {
         } else {
             user.isRemove = true
             user.flushChanges()
-            Response.Success.Remove("user ${user.name}")
+            Response.Success.Remove("user ${user.id}")
         }
     }
 
