@@ -27,6 +27,10 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -58,6 +62,15 @@ class LoginControllerTest {
         with(postman.post("/api/login", mapOf(
             "username" to "root",
             "password" to "wrong password"
+        ))) {
+            Assertions.assertEquals(HttpStatus.OK, statusCode)
+            Assertions.assertEquals("failed", body?.get("status"))
+            Assertions.assertEquals("login failed", body?.get("error"))
+        }
+
+        with(postman.post("/api/login", mapOf(
+            "username" to "wrong username",
+            "password" to "root"
         ))) {
             Assertions.assertEquals(HttpStatus.OK, statusCode)
             Assertions.assertEquals("failed", body?.get("status"))
