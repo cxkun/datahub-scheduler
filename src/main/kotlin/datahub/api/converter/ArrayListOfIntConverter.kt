@@ -11,11 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package datahub.api.component
+package datahub.api.converter
 
 import com.google.common.collect.Lists
-import com.google.common.collect.Sets
-import datahub.models.dtype.FileType
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 
@@ -25,7 +23,7 @@ import org.springframework.stereotype.Component
  * @since 1.0.0
  */
 @Component
-class ArrayListOfIntCOnverter : Converter<String, ArrayList<Int>> {
+class ArrayListOfIntConverter : Converter<String, ArrayList<Int>> {
     override fun convert(value: String): ArrayList<Int> = Lists.newArrayList(
         value.trim('[', ']').split(",").map { it.trim().toInt() }
     )
