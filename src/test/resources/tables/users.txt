@@ -1,6 +1,6 @@
 id	group_ids	name	email	password	is_remove	create_time	update_time
-1	[0]	root	root@datahub.com	88aec6f4d07b756329e42eb50c4688dd	0	2048-08-14 06:10:35	2051-03-13 21:06:23
-2	[6,8,1,9,7,5,2]	cxiCRtDiCS	cxiCRtDiCS@126.com	tDLymRN7WgrQmZcptmK417JFhilMGufP	0	2041-02-10 19:37:55	2042-03-23 08:54:17
+1	[1]	root	root@datahub.com	88aec6f4d07b756329e42eb50c4688dd	0	2048-08-14 06:10:35	2051-03-13 21:06:23
+2	[6,8,1,9,7,5,2]	guest	guest@datahub.com	3b501eda29b54b89d40c4705571d2f5d	0	2041-02-10 19:37:55	2042-03-23 08:54:17
 3	[4,3,8,2,6]	OHzXwnDAAd	OHzXwnDAAd@189.com	FFmlN0LW2zSpYk7sy9Qmr38fZG1GecNJ	0	2041-11-20 12:44:46	2044-05-12 14:09:07
 4	[3,6,5,4,7,2]	NCiUmXrvkC	NCiUmXrvkC@sina.cn	YO48VfRRZp8Acy9yWxygEOLzrJUdtpiU	1	2045-04-03 01:05:29	2046-02-15 02:44:25
 5	[2,5,4,8,6,3]	mhgfRUXmff	mhgfRUXmff@sina.com	19qUtCcIHPJguNkACOntpFLLyKF7aWgS	0	2022-03-25 16:26:58	2023-04-25 05:43:20
