@@ -57,24 +57,23 @@ class Postman(private val template: TestRestTemplate) {
         return uncheckedCast(response)
     }
 
-    fun delete(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
-        val response = template.exchange(url, HttpMethod.DELETE, args.toRequestParam(), Map::class.java)
+    fun delete(url: String): ResponseEntity<Map<String, Any>> {
+        val response = template.exchange(url, HttpMethod.DELETE, mapOf<String, Any>().toRequestParam(), Map::class.java)
         return uncheckedCast(response)
     }
 
-    fun delete(url: String): ResponseEntity<Map<String, Any>> {
-        return delete(url, mapOf())
-    }
 
     fun put(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
         val response = template.exchange(url, HttpMethod.PUT, args.toRequestParam(), Map::class.java)
         return uncheckedCast(response)
     }
 
-    fun login() {
+    fun login() = login("root", "root")
+
+    fun login(username: String, password: String) {
         val response = post("/api/login", mapOf(
-            "username" to "root",
-            "password" to "root"
+            "username" to username,
+            "password" to password
         ))
         val data = response.body!!["data"]
         data as Map<String, String>
