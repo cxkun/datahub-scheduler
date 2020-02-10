@@ -13,11 +13,19 @@
  */
 package datahub.api.auth
 
+import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
-import java.lang.Exception
+import datahub.dao.Users
+import datahub.models.User
+import me.liuwj.ktorm.dsl.eq
+import me.liuwj.ktorm.dsl.select
+import me.liuwj.ktorm.dsl.where
+import me.liuwj.ktorm.entity.findOne
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import java.util.*
-import com.auth0.jwt.JWT
+
 
 /**
  * @author Jensen Qi 2020/01/18
@@ -48,5 +56,12 @@ object Jwt {
         null
     }
 
+    val currentUser: User
+        get() {
+            val servlet = RequestContextHolder.getRequestAttributes() as ServletRequestAttributes
+            val request = servlet.request
+            val userName = getUserName(request.getHeader("TOKEN"))!!
+            return Users.findOne { it.name eq userName }!!
+        }
 
 }
