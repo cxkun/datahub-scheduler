@@ -13,13 +13,11 @@
  */
 package datahub.api.controller
 
+import ch.vorburger.mariadb4j.DB
 import datahub.tools.Postman
 import datahub.api.auth.Jwt
 import datahub.dao.SchemaUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -41,8 +39,14 @@ class LoginControllerTest {
     private lateinit var postman: Postman
 
     @BeforeAll
+    fun startDb() {
+        DB.newEmbeddedDB(3307).start()
+    }
+
+    @BeforeEach
     fun rebuildDB() {
         SchemaUtils.rebuildDB()
+        SchemaUtils.loadTable("datahub.users", this.javaClass.classLoader.getResource("tables/users.txt")!!.path)
         this.postman = Postman(template)
     }
 

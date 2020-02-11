@@ -13,6 +13,7 @@
  */
 package datahub.api.controller
 
+import ch.vorburger.mariadb4j.DB
 import datahub.api.auth.Jwt
 import datahub.tools.Postman
 import datahub.dao.SchemaUtils
@@ -25,6 +26,10 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -34,6 +39,11 @@ class UserControllerTest {
     @Autowired
     lateinit var template: TestRestTemplate
     private lateinit var postman: Postman
+
+    @BeforeAll
+    fun startDb(){
+        DB.newEmbeddedDB(3307).start()
+    }
 
     @BeforeEach
     fun initEnvironment() {

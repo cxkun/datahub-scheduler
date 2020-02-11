@@ -13,6 +13,7 @@
  */
 package datahub.api.controller
 
+import ch.vorburger.mariadb4j.DB
 import datahub.dao.SchemaUtils
 import datahub.models.dtype.FileType
 import datahub.tools.Postman
@@ -38,6 +39,11 @@ class GroupControllerTest {
     @Autowired
     lateinit var template: TestRestTemplate
     private lateinit var postman: Postman
+
+    @BeforeAll
+    fun startDb(){
+        DB.newEmbeddedDB(3307).start()
+    }
 
     @BeforeEach
     fun initEnvironment() {
