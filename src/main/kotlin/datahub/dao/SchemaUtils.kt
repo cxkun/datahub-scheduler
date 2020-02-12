@@ -13,15 +13,22 @@
  */
 package datahub.dao
 
+import com.alibaba.druid.pool.DruidDataSourceFactory
+import com.google.common.base.Charsets
+import com.google.common.io.Resources
 import datahub.api.auth.MD5
+import datahub.models.File
 import datahub.models.Group
 import datahub.models.User
+import datahub.models.dtype.FileType
 import me.liuwj.ktorm.database.Database
 import me.liuwj.ktorm.entity.add
 import me.liuwj.ktorm.schema.Table
 import org.apache.log4j.Logger
 import org.reflections.Reflections
+import java.io.FileReader
 import java.time.LocalDateTime
+import java.util.*
 import kotlin.reflect.full.findAnnotation
 
 
@@ -33,9 +40,19 @@ object SchemaUtils {
     private val logger = Logger.getLogger(this.javaClass)
     private const val lightBlue = "\u001B[1;94m"
     private const val end = "\u001B[m"
+
+    private val dbName = "datahub" //todo: read by config
+    val props = Properties().also { it.load(FileReader(Resources.getResource("druid.properties").file)) }
+    private val db = Database.connect(DruidDataSourceFactory.createDataSource(props))
+
+
+    /**
+     * listing all ORM model define in datahub.dao package
+     */
     private val models = Reflections("datahub.dao").getSubTypesOf(Table::class.java).map {
         it.getField("INSTANCE").get(it) as Table<*>
     }
+
 
     private val Table<*>.DDL: String
         get() = "${this.tableName}(${this::class.findAnnotation<ColumnsDef>()!!.columns})"
@@ -43,39 +60,29 @@ object SchemaUtils {
     fun String.withDB(dbName: String) = "create table if not exists $dbName.$this default charset=utf8mb4"
 
 
-    // todo: read config from properties file
-    private val db = Database.connect(
-        url = "jdbc:mysql://localhost:3306",
-        driver = "com.mysql.jdbc.Driver",
-        user = "root",
-        password = "root"
-    )
-
-
     fun buildDB() = db.useConnection { conn ->
-        logger.info("create database datahub")
-        conn.prepareStatement("create database if not exists datahub default character set = 'utf8'").use { it.execute() }
-        logger.info("database datahub have been created")
+        logger.info("create database $dbName")
+        conn.prepareStatement("create database if not exists $dbName default character set = 'utf8'").use { it.execute() }
+        logger.info("database $dbName have been created")
         models.forEach { table ->
-            val createStatement = table.DDL.withDB("datahub")
+            val createStatement = table.DDL.withDB(dbName)
             logger.info("create table for class ${table.javaClass.name}:\n" + lightBlue + createStatement + end)
             conn.prepareStatement(createStatement).use { it.execute() }
-            logger.info("table datahub.${table.tableName} have been created")
+            logger.info("table $dbName.${table.tableName} have been created")
         }
-        conn.prepareStatement("use datahub").use { it.execute() }
-        Database.connect(
-            url = "jdbc:mysql://localhost:3306/datahub",
-            driver = "com.mysql.jdbc.Driver",
-            user = "root",
-            password = "root"
-        )
+        conn.catalog = dbName
+    }
 
+    fun initDB() {
         val group = Group {
             name = "root"
             isRemove = false
             createTime = LocalDateTime.now()
             updateTime = LocalDateTime.now()
         }
+        Groups.add(group)
+        logger.info("group root created")
+
         val user = User {
             this.groupIds = setOf(group.id)
             this.name = "root"
@@ -86,24 +93,62 @@ object SchemaUtils {
             this.updateTime = LocalDateTime.now()
         }
         Users.add(user)
+        logger.info("user root created")
+
+        val file = File {
+            this.groupId = group.id
+            this.ownerId = user.id
+            this.name = "${user.name}_project"
+            this.type = FileType.DIR
+            this.version = null
+            this.parentId = null
+            this.isRemove = false
+            this.createTime = LocalDateTime.now()
+            this.updateTime = LocalDateTime.now()
+        }
+        Files.add(file)
+        logger.info("dir root_project created")
     }
 
 
     fun cleanDB() = db.useConnection { conn ->
         models.forEach { table ->
             logger.info("drop table for class ${table.javaClass.name}")
-            conn.prepareStatement("drop table if exists datahub.${table.tableName}").use { it.execute() }
-            logger.info("table datahub.${table.tableName} have been drop")
+            conn.prepareStatement("drop table if exists $dbName.${table.tableName}").use { it.execute() }
+            logger.info("table $dbName.${table.tableName} have been drop")
         }
-        logger.info("drop database datahub")
-        conn.prepareStatement("drop database if exists datahub").use { it.execute() }
-        logger.info("database datahub have been drop")
+        logger.info("drop database $dbName")
+        conn.prepareStatement("drop database if exists $dbName").use { it.execute() }
+        logger.info("database $dbName have been drop")
     }
 
     fun rebuildDB() = cleanDB().also { buildDB() }
 
     fun mockDB() = models.forEach {
         TODO()
+    }
+
+    fun loadTable(tableName: String, filePath: String) = db.useConnection { conn ->
+        logger.info("load table $tableName from $filePath")
+        val table = conn.prepareStatement("select * from $tableName").metaData
+        val types = (1..table.columnCount).map { table.getColumnTypeName(it)!! }
+
+        val file = Resources.readLines(java.io.File(filePath).toURI().toURL(), Charsets.UTF_8)
+        file.removeAt(0)
+
+        val values = file.joinToString(",") { line ->
+            line.split("\t").mapIndexed { i, value ->
+                val type = types[i]
+                if (type.contains("CHAR") || type.contains("DATE") || type.contains("TEXT")) {
+                    "'$value'"
+                } else {
+                    value
+                }
+            }.joinToString(",", "(", ")")
+        }
+        conn.prepareStatement("insert into $tableName values $values").use { it.execute() }
+
+        logger.info("file $filePath has been load into table $tableName")
     }
 
 }
