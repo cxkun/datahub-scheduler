@@ -13,26 +13,23 @@
  */
 package datahub.api.controller
 
+import com.google.common.collect.Lists
 import datahub.api.Response
 import datahub.api.ResponseData
-import datahub.api.utils.Page
+import datahub.api.auth.Jwt
 import datahub.dao.FileContents
 import datahub.dao.Files
 import datahub.models.File
 import datahub.models.FileContent
 import datahub.models.dtype.FileType
-import me.liuwj.ktorm.dsl.eq
-import me.liuwj.ktorm.dsl.limit
-import me.liuwj.ktorm.dsl.select
-import me.liuwj.ktorm.dsl.where
+import me.liuwj.ktorm.database.Database
+import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.add
 import me.liuwj.ktorm.entity.findById
-import org.apache.shiro.SecurityUtils
+import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
-import javax.validation.constraints.Min
-import javax.validation.constraints.NotBlank
 
 /**
  * @author Jensen Qi 2020/01/19
@@ -42,62 +39,58 @@ import javax.validation.constraints.NotBlank
 @EnableAutoConfiguration
 @RequestMapping("/api/file")
 class FileController {
+
     @GetMapping
-    fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
-                @RequestParam(required = false, defaultValue = "9999") pageSize: Int = Int.MAX_VALUE): ResponseData {
-        val files = Files.select().where { Files.isRemove eq false }
+    fun listing(@RequestParam(required = false) parentId: Int?,
+                @RequestParam(required = false) like: String?): ResponseData {
+        val files = Files.select().where {
+            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Files.isRemove eq false)
+            if (!like.isNullOrBlank()) { // do global search, will ignore parent ID filter
+                like.split("\\s+".toRegex()).forEach {
+                    conditions.add(Files.name.like("%$it%"))
+                }
+            } else {
+                if (parentId == null) {
+                    conditions.add(Files.parentId.isNull())
+                } else {
+                    conditions.add(Files.parentId eq parentId)
+                }
+            }
+            conditions.reduce { a, b -> a and b }
+        }
         val count = files.totalRecords
         return Response.Success.WithData(mapOf(
             "count" to count,
-            "files" to files.limit(Page.offset(page, pageSize), pageSize).map { Files.createEntity(it) }
+            "files" to files.map { Files.createEntity(it) }.sortedWith(compareBy({
+                when (it.type) {
+                    FileType.DIR -> 0
+                    FileType.DDL -> 1
+                    FileType.SQL -> 2
+                }
+            }, { it.name })) // DIR first
         ))
     }
 
-    @GetMapping("{id}")
-    fun find(@PathVariable id: Int): ResponseData {
-        val file = Files.findById(id)
-        return if (file == null || file.isRemove) {
-            Response.Failed.DataNotFound("file $id")
-        } else {
-            Response.Success.WithData(mapOf("file" to file))
-        }
-    }
-
-    @GetMapping("{id}/content")
-    fun getContent(@PathVariable id: Int): ResponseData {
-        val file = Files.findById(id)
-        return if (file == null || file.isRemove || file.type == FileType.Dir) {
-            Response.Failed.DataNotFound("content of file $id")
-        } else {
-            val fileContent = FileContents.findById(file.version!!)
-            if (fileContent == null || fileContent.isRemove) {
-                Response.Failed.DataNotFound("content of file $id")
-            } else {
-                Response.Success.WithData(mapOf("content" to fileContent))
-            }
-        }
-    }
-
     @PostMapping
-    fun create(@NotBlank(message = "{groupId can't be blank}") groupId: Int,
-               @NotBlank(message = "{name can't be blank}") name: String,
-               @NotBlank(message = "{fileType can't be blank}") type: FileType,
-               @Min(value = 1, message = "{parentId must greater than 1}") parentId: Int
-    ): ResponseData {
-        println(SecurityUtils.getSubject())
-        println(SecurityUtils.getSubject().principal)
+    fun create(@RequestParam(required = true) groupId: Int,
+               @RequestParam(required = true) name: String,
+               @RequestParam(required = true) type: FileType,
+               @RequestParam(required = true) parentId: Int): ResponseData {
+        // todo: parameter check and permission check
+        val currentUser = Jwt.currentUser
         val file = File {
             this.groupId = groupId
-            this.ownerId = 0 // todo:current UserId
+            this.ownerId = currentUser.id
             this.name = name
             this.type = type
+            this.version = null
             this.parentId = parentId
             this.isRemove = false
             this.createTime = LocalDateTime.now()
             this.updateTime = LocalDateTime.now()
         }
         Files.add(file)
-        return if (type != FileType.Dir) {
+        if (type != FileType.DIR) {
             val content = FileContent {
                 this.fileId = file.id
                 this.content = ""
@@ -108,23 +101,63 @@ class FileController {
             FileContents.add(content)
             file.version = content.id
             file.flushChanges()
-            Response.Success.WithData(mapOf(
-                "file" to file,
-                "content" to content
-            ))
-        } else {
-            Response.Success.WithData(mapOf("file" to file))
         }
+        return Response.Success.WithData(mapOf("file" to file))
     }
 
     @PutMapping("{id}")
-    fun update(@PathVariable id: Int) {
+    fun update(@PathVariable id: Int,
+               @RequestParam(required = false) ownerId: Int?,
+               @RequestParam(required = false) name: String?,
+               @RequestParam(required = false) version: Int?,
+               @RequestParam(required = false) parentId: Int?): ResponseData {
+        if (listOfNotNull(ownerId, name, version, parentId).size != 1) {
+            return Response.Failed.IllegalArgument("ownerId, name, version, parentId must only one not null")
+        }
+        val file = Files.findById(id)
+        return if (file == null || file.isRemove) {
+            Response.Failed.DataNotFound("file $id")
+        } else {
+            when {
+                ownerId != null -> file.ownerId = ownerId
+                name != null -> file.name = name
+                version != null -> file.version = version
+                parentId != null -> file.parentId = parentId
+            }
+            file.updateTime = LocalDateTime.now()
+            file.flushChanges()
+            Response.Success.Update("file $id")
+        }
+    }
 
+    private fun removeChildRecursive(parentId: Int) {
+        Database.global.update(Files) {
+            it.isRemove to true
+            where {
+                it.parentId eq parentId
+                it.isRemove eq false
+            }
+        }
+        Files.select().where { Files.type eq FileType.DIR and (Files.parentId eq parentId) }.forEach {
+            removeChildRecursive(Files.createEntity(it).id)
+        }
     }
 
     @DeleteMapping("{id}")
-    fun remove(@PathVariable id: Int) {
-
+    fun remove(@PathVariable id: Int): ResponseData {
+        val file = Files.findById(id)
+        return if (file == null || file.isRemove) {
+            Response.Failed.DataNotFound("file $id")
+        } else if (file.parentId == null) {
+            Response.Failed.IllegalArgument("can not remove root dir ${file.name}")
+        } else {
+            file.isRemove = true
+            file.flushChanges()
+            if (file.type == FileType.DIR) {
+                removeChildRecursive(file.id)
+            }
+            Response.Success.Remove("file ${file.id}")
+        }
     }
 
 }
