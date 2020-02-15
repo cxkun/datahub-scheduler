@@ -37,7 +37,8 @@ object Response {
         const val status = "failed"
         fun WithError(error: Any) = withError(status, error)
         fun DataNotFound(data: Any) = withError(status, "$data not found")
-
+        fun PermissionDenied(message: Any) = withError(status, "permission denied: $message")
+        fun IllegalArgument(message: Any) = withData(status, "illegal argument: $message")
     }
 
 }
