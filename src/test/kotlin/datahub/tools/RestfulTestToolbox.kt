@@ -14,7 +14,6 @@
 package datahub.tools
 
 import ch.vorburger.mariadb4j.DB
-import datahub.models.dtype.FileType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -34,7 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Suppress("UNCHECKED_CAST")
-open class RestfulTestSuit {
+open class RestfulTestToolbox {
     @Autowired
     lateinit var template: TestRestTemplate
     lateinit var postman: Postman
@@ -85,7 +84,7 @@ open class RestfulTestSuit {
         return this
     }
 
-    fun Map<String, Any>.thenGetItemOf(field: String): LinkedHashMap<String, Any> {
+    fun Map<String, Any>.thenGetItem(field: String): LinkedHashMap<String, Any> {
         return get(field) as LinkedHashMap<String, Any>
     }
 
