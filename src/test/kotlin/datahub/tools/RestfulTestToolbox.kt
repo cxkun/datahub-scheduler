@@ -88,6 +88,11 @@ open class RestfulTestToolbox {
         return get(field) as LinkedHashMap<String, Any>
     }
 
+    fun LinkedHashMap<String, Any>.withExpect(block: (LinkedHashMap<String, Any>) -> Unit): LinkedHashMap<String, Any> {
+        block(this)
+        return this
+    }
+
     infix fun Any?.shouldBe(expect: Any?) = Assertions.assertEquals(expect, this)
 
     infix fun Any?.shouldNotBe(expect: Any?) = Assertions.assertNotEquals(expect, this)
