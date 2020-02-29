@@ -33,7 +33,7 @@ import java.util.*
  */
 object Jwt {
 
-    private const val EXPIRE_TIME = 86400L // seconds of one day
+    private const val EXPIRE_TIME = 86400000L // seconds of one day
 
     fun verify(token: String, userName: String, password: String) = try {
         JWT.require(Algorithm.HMAC256(password)).withClaim("username", userName).build().verify(token)
