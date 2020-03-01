@@ -19,7 +19,6 @@ import datahub.api.ResponseData
 import datahub.api.auth.Jwt
 import datahub.dao.FileContents
 import datahub.dao.Files
-import datahub.dao.Groups
 import datahub.models.File
 import datahub.models.FileContent
 import datahub.models.dtype.FileType
@@ -148,10 +147,7 @@ class FileController {
     private fun removeChildRecursive(parentId: Int) {
         Database.global.update(Files) {
             it.isRemove to true
-            where {
-                it.parentId eq parentId
-                it.isRemove eq false
-            }
+            where { it.parentId eq parentId and (it.isRemove eq false) }
         }
         Files.select().where { Files.type eq FileType.DIR and (Files.parentId eq parentId) }.forEach {
             removeChildRecursive(Files.createEntity(it).id)
