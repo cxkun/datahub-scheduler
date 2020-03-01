@@ -74,6 +74,11 @@ class FileControllerTest : RestfulTestToolbox() {
     }
 
     @Test
+    fun findRootDir() {
+
+    }
+
+    @Test
     fun search() {
         val files = postman.get("/api/file", mapOf("like" to " a  b   c    "))
             .shouldSuccess.thenGetData.andCheckCount(2).thenGetListOf("files").andCheckSize(2)
@@ -180,11 +185,20 @@ class FileControllerTest : RestfulTestToolbox() {
     @Test
     fun removeDir() {
         postman.delete("/api/file/4").shouldSuccess.withMessage("file 4 has been removed")
+
+        // 子节点应被删除
         postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(0)
             .thenGetListOf("files").andCheckSize(0)
+
+        // 孙节点应被删除
         postman.get("/api/file", mapOf("parentId" to 27)).shouldSuccess.thenGetData.andCheckCount(0)
             .thenGetListOf("files").andCheckSize(0)
+
+        // 兄弟节点不应被删除
+        postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.thenGetData.andCheckCount(4)
+            .thenGetListOf("files").andCheckSize(4)
     }
+
 
     @Test
     fun removeNotFoundFile() {
