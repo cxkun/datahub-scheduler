@@ -147,6 +147,7 @@ class FileController {
     private fun removeChildRecursive(parentId: Int) {
         Database.global.update(Files) {
             it.isRemove to true
+            it.updateTime to LocalDateTime.now()
             where { it.parentId eq parentId and (it.isRemove eq false) }
         }
         Files.select().where { Files.type eq FileType.DIR and (Files.parentId eq parentId) }.forEach {
@@ -163,6 +164,7 @@ class FileController {
             Response.Failed.IllegalArgument("can not remove root dir ${file.name}")
         } else {
             file.isRemove = true
+            file.updateTime = LocalDateTime.now()
             file.flushChanges()
             if (file.type == FileType.DIR) {
                 removeChildRecursive(file.id)
