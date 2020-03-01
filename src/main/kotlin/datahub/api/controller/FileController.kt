@@ -19,6 +19,7 @@ import datahub.api.ResponseData
 import datahub.api.auth.Jwt
 import datahub.dao.FileContents
 import datahub.dao.Files
+import datahub.dao.Groups
 import datahub.models.File
 import datahub.models.FileContent
 import datahub.models.dtype.FileType
@@ -69,6 +70,20 @@ class FileController {
                 }
             }, { it.name })) // DIR first
         ))
+    }
+
+    /**
+     * 通过 groupId 查找该项目组的根目录
+     */
+    @GetMapping("/root")
+    fun findRoot(@RequestParam(required = true) groupId: Int): ResponseData {
+        val file = Files.select().where {
+            Files.isRemove eq false and (Files.groupId eq groupId) and (Files.parentId.isNull())
+        }.map { Files.createEntity(it) }
+        if (file.size != 1) {
+            return Response.Failed.DataNotFound("root in $groupId")
+        }
+        return Response.Success.WithData(mapOf("file" to file.first()))
     }
 
     @PostMapping
