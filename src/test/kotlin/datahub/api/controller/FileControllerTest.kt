@@ -48,7 +48,7 @@ class FileControllerTest : RestfulTestToolbox() {
     @Test
     fun listingFirstOrder() {
         val fileNodeCount = 5
-        val types = listOf("DIR", "DDL", "SQL", "SQL", "SQL")
+        val types = listOf("DIR", "SPARK", "SQL", "SQL", "SQL")
         val names = listOf("zwgjydgn", "jldwzlys", "kniovyqn", "ladlehnr", "yoglnkyc")
         postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
             .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->
@@ -62,7 +62,7 @@ class FileControllerTest : RestfulTestToolbox() {
     @Test
     fun listingSecondOrder() {
         val fileNodeCount = 3
-        val types = listOf("DIR", "DDL", "SQL")
+        val types = listOf("DIR", "SPARK", "SQL")
         val names = listOf("zvdjsdhz", "yzhamcqc", "yijlstlq")
         postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
             .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->

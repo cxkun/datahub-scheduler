@@ -64,8 +64,9 @@ class FileController {
             "files" to files.map { Files.createEntity(it) }.sortedWith(compareBy({
                 when (it.type) {
                     FileType.DIR -> 0
-                    FileType.DDL -> 1
-                    FileType.SQL -> 2
+                    FileType.SQL -> 1
+                    FileType.MR -> 2
+                    FileType.SPARK -> 3
                 }
             }, { it.name })) // DIR first
         ))

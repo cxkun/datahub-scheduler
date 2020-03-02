@@ -18,5 +18,5 @@ package datahub.models.dtype
  * @since 1.0.0
  */
 enum class FileType {
-    DIR, DDL, SQL, SPARK, MR
+    DIR, SQL, SPARK, MR
 }
