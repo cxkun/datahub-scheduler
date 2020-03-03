@@ -97,6 +97,14 @@ open class RestfulTestToolbox {
 
     infix fun Any?.shouldNotBe(expect: Any?) = Assertions.assertNotEquals(expect, this)
 
+    infix fun Any?.shouldSameElemWith(another: Any?): Boolean {
+        this as Collection<Any>
+        another as Collection<Any>
+        return this.all { another.contains(it) } && another.all { this.contains(it) }
+    }
+
+    infix fun LinkedHashMap<String, Any>.shouldNotContain(key: String) = Assertions.assertFalse(this.keys.contains(key))
+
     fun assertResponseFailed(response: ResponseEntity<Map<String, Any>>) {
         Assertions.assertEquals(HttpStatus.OK, response.statusCode)
         Assertions.assertEquals("failed", response.body?.get("status"))
