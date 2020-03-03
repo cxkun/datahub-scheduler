@@ -15,6 +15,7 @@ package datahub.api.controller
 
 import datahub.api.Response
 import datahub.api.ResponseData
+import datahub.api.auth.Jwt
 import datahub.api.auth.MD5
 import datahub.api.utils.Page
 import datahub.dao.Users
@@ -56,6 +57,13 @@ class UserController {
         ))
     }
 
+    @GetMapping("/current")
+    fun currentUser(): ResponseData {
+        return Response.Success.WithData(mapOf(
+            "user" to Jwt.currentUser
+        ))
+    }
+
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
         val user = Users.select(
@@ -91,6 +99,7 @@ class UserController {
             this.updateTime = LocalDateTime.now()
         }
         Users.add(user)
+        // todo: 创建用户后将账号密码发送到用户邮箱
         return Response.Success.WithData(mapOf("userId" to user.id))
     }
 

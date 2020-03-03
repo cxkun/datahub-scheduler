@@ -50,6 +50,27 @@ class UserControllerTest : RestfulTestToolbox() {
     }
 
     @Test
+    fun currentUser() {
+        postman.login("root", "root")
+        postman.get("/api/user/current").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
+            it["groupIds"] shouldSameElemWith setOf(1)
+            it["name"] shouldBe "root"
+            it["email"] shouldBe "root@datahub.com"
+            it["createTime"] shouldBe "2048-08-14 06:10:35"
+            it["updateTime"] shouldBe "2051-03-13 21:06:23"
+        }
+
+        postman.login("guest", "guest")
+        postman.get("/api/user/current").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
+            it["groupIds"] shouldSameElemWith setOf(6, 8, 1, 9, 7, 5, 2)
+            it["name"] shouldBe "guest"
+            it["email"] shouldBe "guest@datahub.com"
+            it["createTime"] shouldBe "2041-02-10 19:37:55"
+            it["updateTime"] shouldBe "2042-03-23 08:54:17"
+        }
+    }
+
+    @Test
     fun find() {
         postman.get("/api/user/66").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
             it["groupIds"] shouldSameElemWith setOf(8, 7, 3, 6, 2, 1)
