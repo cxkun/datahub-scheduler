@@ -46,6 +46,7 @@ class UserControllerTest : RestfulTestToolbox() {
             postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess
                 .thenGetData.andCheckCount(validUserCount)
                 .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .forEach { it shouldNotContain "password" }
         }
     }
 
@@ -58,6 +59,7 @@ class UserControllerTest : RestfulTestToolbox() {
             it["email"] shouldBe "root@datahub.com"
             it["createTime"] shouldBe "2048-08-14 06:10:35"
             it["updateTime"] shouldBe "2051-03-13 21:06:23"
+            it shouldNotContain "password"
         }
 
         postman.login("guest", "guest")
@@ -67,6 +69,7 @@ class UserControllerTest : RestfulTestToolbox() {
             it["email"] shouldBe "guest@datahub.com"
             it["createTime"] shouldBe "2041-02-10 19:37:55"
             it["updateTime"] shouldBe "2042-03-23 08:54:17"
+            it shouldNotContain "password"
         }
     }
 
@@ -78,6 +81,7 @@ class UserControllerTest : RestfulTestToolbox() {
             it["email"] shouldBe "WjWUMovObM@139.com"
             it["createTime"] shouldBe "2042-06-02 09:25:38"
             it["updateTime"] shouldBe "2043-01-26 13:59:27"
+            it shouldNotContain "password"
         }
 
         postman.get("/api/user/67").shouldFailed.withError("user 67 not found")
@@ -98,6 +102,7 @@ class UserControllerTest : RestfulTestToolbox() {
             it["groupIds"] shouldSameElemWith groupIds
             it["name"] shouldBe name
             it["email"] shouldBe email
+            it shouldNotContain "password"
         }
 
         val token = postman.post("/api/login", mapOf("username" to name, "password" to password))
