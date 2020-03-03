@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 import javax.validation.constraints.NotBlank
+import kotlin.collections.LinkedHashMap
 
 /**
  * @author Jensen Qi
@@ -59,9 +60,15 @@ class UserController {
 
     @GetMapping("/current")
     fun currentUser(): ResponseData {
-        return Response.Success.WithData(mapOf(
-            "user" to Jwt.currentUser
-        ))
+        val currentUser = Jwt.currentUser
+        val responseData = LinkedHashMap<String, Any>()
+        responseData["id"] = currentUser.id
+        responseData["groupIds"] = currentUser.groupIds
+        responseData["name"] = currentUser.name
+        responseData["email"] = currentUser.email
+        responseData["createTime"] = currentUser.createTime
+        responseData["updateTime"] = currentUser.updateTime
+        return Response.Success.WithData(mapOf("user" to responseData))
     }
 
     @GetMapping("{id}")
