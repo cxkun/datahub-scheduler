@@ -96,6 +96,9 @@ class UserController {
                @NotBlank(message = "{required}") password: String,
                @RequestParam(required = true) groupIds: ArrayList<Int>,
                @NotBlank(message = "{required}") email: String): ResponseData {
+        if (Users.select().where { Users.name eq name and (Users.isRemove eq false) }.totalRecords > 0) {
+            return Response.Failed.IllegalArgument("user $name exists")
+        }
         val user = User {
             this.name = name
             this.groupIds = groupIds.toSet()

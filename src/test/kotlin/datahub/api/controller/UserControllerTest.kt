@@ -89,6 +89,10 @@ class UserControllerTest : RestfulTestToolbox() {
 
     @Test
     fun create() {
+        // 禁止创建重名用户
+        postman.post("/api/user", mapOf("name" to "root", "password" to "", "groupIds" to listOf(1), "email" to ""))
+            .shouldFailed.withError("illegal argument: user root exists")
+
         val nextUserId = 180
         val name = "test_create"
         val password = "test_password"
