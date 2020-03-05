@@ -37,51 +37,39 @@ import kotlin.collections.LinkedHashMap
 @RequestMapping("/api/user")
 class UserController {
 
+    private fun User.wipeOutPassword(): LinkedHashMap<String, Any> {
+        val responseData = LinkedHashMap<String, Any>()
+        responseData["id"] = this.id
+        responseData["groupIds"] = this.groupIds
+        responseData["name"] = this.name
+        responseData["email"] = this.email
+        responseData["createTime"] = this.createTime
+        responseData["updateTime"] = this.updateTime
+        return responseData
+    }
+
     @GetMapping
     @ResponseBody
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int): ResponseData {
-        val users = Users.select(
-            Users.id,
-            Users.groupIds,
-            Users.name,
-            Users.email,
-            Users.createTime,
-            Users.updateTime
-        ).where { Users.isRemove eq false }
+        val users = Users.select().where { Users.isRemove eq false }
         val count = users.totalRecords
         return Response.Success.WithData(mapOf(
             "count" to count,
             "users" to users.orderBy(Users.id.asc()).limit(Page.offset(page, pageSize), pageSize).map {
-                Users.createEntity(it)
+                Users.createEntity(it).wipeOutPassword()
             }
         ))
     }
 
     @GetMapping("/current")
-    fun currentUser(): ResponseData {
-        val currentUser = Jwt.currentUser
-        val responseData = LinkedHashMap<String, Any>()
-        responseData["id"] = currentUser.id
-        responseData["groupIds"] = currentUser.groupIds
-        responseData["name"] = currentUser.name
-        responseData["email"] = currentUser.email
-        responseData["createTime"] = currentUser.createTime
-        responseData["updateTime"] = currentUser.updateTime
-        return Response.Success.WithData(mapOf("user" to responseData))
-    }
+    fun currentUser(): ResponseData = Response.Success.WithData(mapOf("user" to Jwt.currentUser.wipeOutPassword()))
+
 
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
-        val user = Users.select(
-            Users.id,
-            Users.groupIds,
-            Users.name,
-            Users.email,
-            Users.createTime,
-            Users.updateTime
-        ).where { Users.id eq id and (Users.isRemove eq false) }.map {
-            Users.createEntity(it)
+        val user = Users.select().where { Users.id eq id and (Users.isRemove eq false) }.map {
+            Users.createEntity(it).wipeOutPassword()
         }.firstOrNull()
         return if (user == null) {
             Response.Failed.DataNotFound("user $id")
@@ -110,7 +98,7 @@ class UserController {
         }
         Users.add(user)
         // todo: 创建用户后将账号密码发送到用户邮箱
-        return Response.Success.WithData(mapOf("userId" to user.id))
+        return Response.Success.WithData(mapOf("user" to user.wipeOutPassword()))
     }
 
 
