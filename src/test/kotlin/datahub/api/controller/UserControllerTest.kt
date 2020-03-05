@@ -127,7 +127,11 @@ class UserControllerTest : RestfulTestToolbox() {
 
         postman.post("/api/login", mapOf("username" to oldName, "password" to "root")).shouldSuccess
 
-        postman.put("/api/user/1", mapOf("name" to newName)).shouldSuccess.withMessage("user 1 has been update")
+        postman.put("/api/user/1", mapOf("name" to newName)).shouldSuccess.thenGetData.thenGetItem("user")
+            .withExpect {
+                it["name"] shouldBe newName
+                it shouldNotContain "password"
+            }
 
         postman.post("/api/login", mapOf("username" to oldName, "password" to "root")).shouldFailed.withError("login failed")
 
@@ -143,7 +147,8 @@ class UserControllerTest : RestfulTestToolbox() {
 
         postman.post("/api/login", mapOf("username" to "root", "password" to oldPassword)).shouldSuccess
 
-        postman.put("/api/user/1", mapOf("password" to newPassword)).shouldSuccess.withMessage("user 1 has been update")
+        postman.put("/api/user/1", mapOf("password" to newPassword)).shouldSuccess.thenGetData.thenGetItem("user")
+            .withExpect { it shouldNotContain "password" }
 
         postman.post("/api/login", mapOf("username" to "root", "password" to oldPassword)).shouldFailed.withError("login failed")
 
@@ -155,7 +160,11 @@ class UserControllerTest : RestfulTestToolbox() {
     @Test
     fun updateEmail() {
         val newEmail = "new_email@datahub.com"
-        postman.put("/api/user/2", mapOf("email" to newEmail)).shouldSuccess.withMessage("user 2 has been update")
+        postman.put("/api/user/2", mapOf("email" to newEmail)).shouldSuccess.thenGetData.thenGetItem("user")
+            .withExpect {
+                it["email"] shouldBe newEmail
+                it shouldNotContain "password"
+            }
         postman.get("/api/user/2").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
             it["email"] shouldBe newEmail
             it["updateTime"] shouldNotBe "2042-03-23 08:54:17"
@@ -165,7 +174,11 @@ class UserControllerTest : RestfulTestToolbox() {
     @Test
     fun updateGroupIds() {
         val newGroupIds = setOf(137, 149)
-        postman.put("/api/user/2", mapOf("groupIds" to newGroupIds)).shouldSuccess.withMessage("user 2 has been update")
+        postman.put("/api/user/2", mapOf("groupIds" to newGroupIds)).shouldSuccess.thenGetData.thenGetItem("user")
+            .withExpect {
+                it["groupIds"] shouldSameElemWith newGroupIds
+                it shouldNotContain "password"
+            }
         postman.get("/api/user/2").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
             it["groupIds"] shouldSameElemWith newGroupIds
             it["updateTime"] shouldNotBe "2042-03-23 08:54:17"
@@ -179,7 +192,12 @@ class UserControllerTest : RestfulTestToolbox() {
         val newEmail = "new_email@datahub.com"
         val newGroupIds = setOf(137, 149)
         postman.put("/api/user/2", mapOf("name" to newName, "password" to newPassword, "email" to newEmail, "groupIds" to newGroupIds))
-            .shouldSuccess.withMessage("user 2 has been update")
+            .shouldSuccess.thenGetData.thenGetItem("user").withExpect {
+            it["name"] shouldBe newName
+            it["email"] shouldBe newEmail
+            it["groupIds"] shouldSameElemWith newGroupIds
+            it shouldNotContain "password"
+        }
 
         val token = postman.post("/api/login", mapOf("username" to newName, "password" to newPassword))
             .shouldSuccess.thenGetData["token"].toString()

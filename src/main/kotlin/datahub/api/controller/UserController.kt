@@ -134,7 +134,7 @@ class UserController {
                 user.updateTime = LocalDateTime.now()
             }
             user.flushChanges()
-            Response.Success.Update("user $id")
+            Response.Success.WithData(mapOf("user" to user.wipeOutPassword()))
         }
     }
 
