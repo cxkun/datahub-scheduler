@@ -100,7 +100,13 @@ class UserControllerTest : RestfulTestToolbox() {
         val email = "test_create@datahub.com"
 
         postman.post("/api/user", mapOf("name" to name, "password" to password, "groupIds" to groupIds, "email" to email))
-            .shouldSuccess.thenGetData["userId"] shouldBe nextUserId
+            .shouldSuccess.thenGetData.thenGetItem("user").withExpect {
+            it["id"] shouldBe nextUserId
+            it["name"] shouldBe name
+            it["email"] shouldBe email
+            it["groupIds"] shouldSameElemWith groupIds
+            it shouldNotContain "password"
+        }
 
         postman.get("/api/user/$nextUserId").shouldSuccess.thenGetData.thenGetItem("user").withExpect {
             it["groupIds"] shouldSameElemWith groupIds
