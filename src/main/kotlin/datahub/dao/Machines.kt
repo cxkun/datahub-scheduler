@@ -28,7 +28,7 @@ import me.liuwj.ktorm.schema.*
     ip              varchar(15)     comment 'IP address',
     cpu_load        tinyint         comment 'cpu load, range [0, 100]%',
     mem_load        tinyint         comment 'memory load, range [0, 100]%',
-    disk_load       tinyint         comment 'disk usage, range [0, 100]%',
+    disk_usage       tinyint         comment 'disk usage, range [0, 100]%',
     is_remove       bool            comment 'whether machine is removed',
     create_time     datetime        comment 'task create time',
     update_time     datetime        comment 'last update time',
