@@ -51,6 +51,50 @@ class UserControllerTest : RestfulTestToolbox() {
     }
 
     @Test
+    fun search() {
+        // 提供空或 null 的相似词
+        var validUserCount = 143
+        var pageSize = 13
+        var queryTimes = validUserCount / pageSize + 1
+        var lastPageUserCount = validUserCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess
+                .thenGetData.andCheckCount(validUserCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .forEach { it shouldNotContain "password" }
+
+            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to "  ")).shouldSuccess
+                .thenGetData.andCheckCount(validUserCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .forEach { it shouldNotContain "password" }
+        }
+
+        // 提供 1 个相似词
+        validUserCount = 43
+        pageSize = 7
+        queryTimes = validUserCount / pageSize + 1
+        lastPageUserCount = validUserCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a")).shouldSuccess
+                .thenGetData.andCheckCount(validUserCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .forEach { it shouldNotContain "password" }
+        }
+
+        // 提供 2 个相似词
+        validUserCount = 8
+        pageSize = 3
+        queryTimes = validUserCount / pageSize + 1
+        lastPageUserCount = validUserCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/user", mapOf("page" to page, "pageSize" to pageSize, "like" to " a b")).shouldSuccess
+                .thenGetData.andCheckCount(validUserCount)
+                .thenGetListOf("users").andCheckSize(if (page == queryTimes) lastPageUserCount else pageSize)
+                .forEach { it shouldNotContain "password" }
+        }
+    }
+
+    @Test
     fun currentUser() {
         postman.login("root", "root")
         postman.get("/api/user/current").shouldSuccess.thenGetData.thenGetItem("user").withExpect {

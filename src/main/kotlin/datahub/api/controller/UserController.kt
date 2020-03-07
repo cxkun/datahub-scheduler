@@ -13,6 +13,7 @@
  */
 package datahub.api.controller
 
+import com.google.common.collect.Lists
 import datahub.api.Response
 import datahub.api.ResponseData
 import datahub.api.auth.Jwt
@@ -22,6 +23,7 @@ import datahub.dao.Users
 import datahub.models.User
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.*
+import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -51,8 +53,17 @@ class UserController {
     @GetMapping
     @ResponseBody
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
-                @RequestParam(required = false, defaultValue = "9999") pageSize: Int): ResponseData {
-        val users = Users.select().where { Users.isRemove eq false }
+                @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
+                @RequestParam(required = false) like: String?): ResponseData {
+        val users = Users.select().where {
+            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Users.isRemove eq false)
+            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
+                like.split("\\s+".toRegex()).forEach {
+                    conditions.add(Users.name.like("%$it%"))
+                }
+            }
+            conditions.reduce { a, b -> a and b }
+        }
         val count = users.totalRecords
         return Response.Success.WithData(mapOf(
             "count" to count,
