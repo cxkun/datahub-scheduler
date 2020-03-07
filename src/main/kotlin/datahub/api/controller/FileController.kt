@@ -45,7 +45,7 @@ class FileController {
                 @RequestParam(required = false) like: String?): ResponseData {
         val files = Files.select().where {
             val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Files.isRemove eq false)
-            if (!like.isNullOrBlank()) { // do global search, will ignore parent ID filter
+            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") { // do global search, will ignore parent ID filter
                 like.split("\\s+".toRegex()).forEach {
                     conditions.add(Files.name.like("%$it%"))
                 }
@@ -92,6 +92,9 @@ class FileController {
                @RequestParam(required = true) type: FileType,
                @RequestParam(required = true) parentId: Int): ResponseData {
         // todo: parameter check and permission check
+        if (Files.select().where { Files.isRemove eq false and (Files.parentId eq parentId) and (Files.name eq name) }.totalRecords > 0) {
+            return Response.Failed.IllegalArgument("该文件夹下已存在 $name 节点")
+        }
         val currentUser = Jwt.currentUser
         val file = File {
             this.groupId = groupId
@@ -120,6 +123,8 @@ class FileController {
         return Response.Success.WithData(mapOf("file" to file))
     }
 
+    private fun File.isRootDir() = this.parentId == null
+
     @PutMapping("{id}")
     fun update(@PathVariable id: Int,
                @RequestParam(required = false) ownerId: Int?,
@@ -132,6 +137,8 @@ class FileController {
         val file = Files.findById(id)
         return if (file == null || file.isRemove) {
             Response.Failed.DataNotFound("file $id")
+        } else if (file.isRootDir()) {
+            return Response.Failed.IllegalArgument("根节点不允许更改")
         } else {
             when {
                 ownerId != null -> file.ownerId = ownerId
@@ -162,7 +169,7 @@ class FileController {
         return if (file == null || file.isRemove) {
             Response.Failed.DataNotFound("file $id")
         } else if (file.parentId == null) {
-            Response.Failed.IllegalArgument("can not remove root dir ${file.name}")
+            Response.Failed.IllegalArgument("根节点不允许删除")
         } else {
             file.isRemove = true
             file.updateTime = LocalDateTime.now()
