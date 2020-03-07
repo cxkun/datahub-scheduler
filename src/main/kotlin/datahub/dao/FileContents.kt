@@ -31,7 +31,7 @@ import me.liuwj.ktorm.schema.*
 """)
 object FileContents : Table<FileContent>("file_contents") {
     val id by int("id").primaryKey().bindTo { it.id }
-    val fileId by int("fileId").bindTo { it.fileId }
+    val fileId by int("file_id").bindTo { it.fileId }
     val content by text("content").bindTo { it.content }
     val isRemove by boolean("is_remove").bindTo { it.isRemove }
     val createTime by datetime("create_time").bindTo { it.createTime }
