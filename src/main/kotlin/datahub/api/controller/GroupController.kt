@@ -13,18 +13,21 @@
  */
 package datahub.api.controller
 
+import com.google.common.collect.Lists
 import datahub.api.Response
 import datahub.api.ResponseData
 import datahub.api.auth.Jwt
 import datahub.api.utils.Page
 import datahub.dao.Files
 import datahub.dao.Groups
+import datahub.dao.Users
 import datahub.models.File
 import datahub.models.Group
 import datahub.models.dtype.FileType
 import me.liuwj.ktorm.dsl.*
 import me.liuwj.ktorm.entity.add
 import me.liuwj.ktorm.entity.findById
+import me.liuwj.ktorm.schema.ColumnDeclaring
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -41,8 +44,17 @@ class GroupController {
 
     @GetMapping
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
-                @RequestParam(required = false, defaultValue = "9999") pageSize: Int): ResponseData {
-        val groups = Groups.select().where { Groups.isRemove eq false }
+                @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
+                @RequestParam(required = false) like: String?): ResponseData {
+        val groups = Groups.select().where {
+            val conditions = Lists.newArrayList<ColumnDeclaring<Boolean>>(Groups.isRemove eq false)
+            if (like != null && like.isNotBlank() && like.trim().toUpperCase() != "NULL") {
+                like.split("\\s+".toRegex()).forEach {
+                    conditions.add(Groups.name.like("%$it%"))
+                }
+            }
+            conditions.reduce { a, b -> a and b }
+        }
         val count = groups.totalRecords
         return Response.Success.WithData(mapOf(
             "count" to count,
