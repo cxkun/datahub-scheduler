@@ -23,7 +23,6 @@ import org.junit.jupiter.api.*
  * @author Jensen Qi
  * @since 1.0.0
  */
-@Suppress("UNCHECKED_CAST")
 class FileControllerTest : RestfulTestToolbox() {
 
     @BeforeEach
@@ -48,8 +47,8 @@ class FileControllerTest : RestfulTestToolbox() {
     @Test
     fun listingFirstOrder() {
         val fileNodeCount = 5
-        val types = listOf("DIR", "SPARK", "SQL", "SQL", "SQL")
-        val names = listOf("zwgjydgn", "jldwzlys", "kniovyqn", "ladlehnr", "yoglnkyc")
+        val types = listOf("DIR", "SQL", "SQL", "SQL", "SPARK")
+        val names = listOf("zwgjydgn", "kniovyqn", "ladlehnr", "yoglnkyc", "jldwzlys")
         postman.get("/api/file", mapOf("parentId" to 1)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
             .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->
                 it["groupId"] shouldBe 1
@@ -62,8 +61,8 @@ class FileControllerTest : RestfulTestToolbox() {
     @Test
     fun listingSecondOrder() {
         val fileNodeCount = 3
-        val types = listOf("DIR", "SPARK", "SQL")
-        val names = listOf("zvdjsdhz", "yzhamcqc", "yijlstlq")
+        val types = listOf("DIR", "SQL", "SPARK")
+        val names = listOf("zvdjsdhz", "yijlstlq", "yzhamcqc")
         postman.get("/api/file", mapOf("parentId" to 4)).shouldSuccess.thenGetData.andCheckCount(fileNodeCount)
             .thenGetListOf("files").andCheckSize(fileNodeCount).forEachIndexed { i, it ->
                 it["groupId"] shouldBe 1
@@ -110,6 +109,15 @@ class FileControllerTest : RestfulTestToolbox() {
 
         postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
             .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+
+        // 创建同名文件夹
+        postman.post("/api/file", mapOf(
+            "groupId" to 12345,
+            "name" to "test create",
+            "type" to "DIR",
+            "parentId" to 38324)
+        ).shouldFailed.withIllegalArgumentError("该文件夹下已存在 test create 节点")
+
     }
 
     @Test
@@ -133,6 +141,13 @@ class FileControllerTest : RestfulTestToolbox() {
 
         postman.get("/api/file", mapOf("parentId" to 38324)).shouldSuccess.thenGetData.andCheckCount(1)
             .thenGetListOf("files").first().withExpect { it["name"] shouldBe "test create" }
+
+        postman.post("/api/file", mapOf(
+            "groupId" to 12345,
+            "name" to "test create",
+            "type" to "SQL",
+            "parentId" to 38324)
+        ).shouldFailed.withIllegalArgumentError("该文件夹下已存在 test create 节点")
     }
 
     @Test
@@ -161,9 +176,10 @@ class FileControllerTest : RestfulTestToolbox() {
     }
 
     @Test
-    fun updateNotFoundFile() {
+    fun illegalUpdate() {
         postman.put("/api/file/11", mapOf("ownerId" to 1)).shouldFailed.withNotFoundError("file 11")
         postman.put("/api/file/70", mapOf("ownerId" to 1)).shouldFailed.withNotFoundError("file 70")
+        postman.put("/api/file/56", mapOf("ownerId" to 2)).shouldFailed.withIllegalArgumentError("根节点不允许更改")
     }
 
     @Test
@@ -179,7 +195,7 @@ class FileControllerTest : RestfulTestToolbox() {
 
     @Test
     fun removeRootDir() {
-        postman.delete("/api/file/56").shouldFailed.withIllegalArgumentError("can not remove root dir hhkjnqwc")
+        postman.delete("/api/file/56").shouldFailed.withIllegalArgumentError("根节点不允许删除")
     }
 
     @Test
