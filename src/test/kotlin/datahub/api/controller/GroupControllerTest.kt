@@ -99,7 +99,11 @@ class GroupControllerTest : RestfulTestToolbox() {
     @Test
     fun update() {
         val newName = "new_name"
-        postman.put("/api/group/25", mapOf("name" to newName)).shouldSuccess.withMessage("group 25 has been update")
+        postman.put("/api/group/25", mapOf("name" to newName)).shouldSuccess.thenGetData.thenGetItem("group")
+            .withExpect {
+                it["name"] shouldBe newName
+                it["updateTime"] shouldNotBe "2051-07-10 20:16:48"
+            }
         postman.get("/api/group/25").shouldSuccess.thenGetData.thenGetItem("group").withExpect {
             it["name"] shouldBe newName
             it["updateTime"] shouldNotBe "2051-07-10 20:16:48"

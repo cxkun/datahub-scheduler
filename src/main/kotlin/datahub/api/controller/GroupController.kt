@@ -101,7 +101,7 @@ class GroupController {
                 group.updateTime = LocalDateTime.now()
             }
             group.flushChanges()
-            Response.Success.Update("group ${group.id}")
+            Response.Success.WithData(mapOf("group" to group))
         }
     }
 
