@@ -32,8 +32,20 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("/api/login")
 class LoginController {
 
+    /**
+     * @api {post} /api/login 用户登录
+     * @apiDescription 用户登录，若账号密码正确，则返回 token，后续的其他请求都需要设置这个 token
+     * @apiGroup Login
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {String} username 登录名
+     * @apiParam {String} password 登录密码
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1ODM2ODI0MTQsInVzZXJuYW1lIjoicm9vdCJ9.LQuBenBb9UymkBfmzYkxCvrq5ecVL2YGqAyAtSU2IjY"}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"login failed"}
+     */
     @PostMapping
-    @ResponseBody
     fun login(@NotBlank(message = "{required}") username: String,
               @NotBlank(message = "{required}") password: String): Map<String, Any> {
         val passwordMD5 = MD5.encrypt(password)

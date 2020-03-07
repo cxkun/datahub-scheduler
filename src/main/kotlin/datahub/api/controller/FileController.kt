@@ -40,6 +40,19 @@ import java.time.LocalDateTime
 @RequestMapping("/api/file")
 class FileController {
 
+    /**
+     * @api {get} /api/file 获取文件列表
+     * @apiDescription 获取指定父节点的文件列表，或全局模糊查找
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {Number} [parentId = null] 父节点 ID
+     * @apiParam {String} [like = null] 文件名模糊匹配，多个词用空格分隔，null 字符串会被忽略
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"count":3,"files":[{"id":27,"groupId":1,"ownerId":19,"name":"zvdjsdhz","type":"DIR","parentId":4,"isRemove":false,"createTime":"2028-06-08 05:25:18","updateTime":"2029-07-07 15:07:21"},{"id":55,"groupId":1,"ownerId":44,"name":"yijlstlq","type":"SQL","version":41,"parentId":4,"isRemove":false,"createTime":"2008-04-13 07:17:42","updateTime":"2011-01-27 21:49:43"},{"id":42,"groupId":1,"ownerId":40,"name":"yzhamcqc","type":"SPARK","version":23,"parentId":4,"isRemove":false,"createTime":"2017-09-18 02:08:21","updateTime":"2020-08-30 13:28:13"}]}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @GetMapping
     fun listing(@RequestParam(required = false) parentId: Int?,
                 @RequestParam(required = false) like: String?): ResponseData {
@@ -72,8 +85,18 @@ class FileController {
         ))
     }
 
+
     /**
-     * 通过 groupId 查找该项目组的根目录
+     * @api {get} /api/file/root 获取根目录
+     * @apiDescription 获取指定项目组的根目录
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {Number} groupId 项目组 ID
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"file":{"id":1,"groupId":1,"ownerId":1,"name":"root_project","type":"DIR","isRemove":false,"createTime":"2037-05-20 14:58:39","updateTime":"2040-02-04 21:46:36"}}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
      */
     @GetMapping("/root")
     fun findRoot(@RequestParam(required = true) groupId: Int): ResponseData {
@@ -86,6 +109,21 @@ class FileController {
         return Response.Success.WithData(mapOf("file" to file.first()))
     }
 
+    /**
+     * @api {post} /api/file 创建文件节点
+     * @apiDescription 创建文件节点，并返回创建后的数据
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {Number} groupId 归属的项目组 ID
+     * @apiParam {String} name 节点名称
+     * @apiParam {Enum} type 文件类型，可选 DIR、 SQL、 SPARK、 MR
+     * @apiParam {Number} parentId 父节点 ID
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"file":{"groupId":1,"ownerId":1,"name":"aaa","type":"SPARK","version":1,"parentId":1,"isRemove":false,"createTime":"2020-03-07 23:36:34","updateTime":"2020-03-07 23:36:34","id":71}}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @PostMapping
     fun create(@RequestParam(required = true) groupId: Int,
                @RequestParam(required = true) name: String,
@@ -125,6 +163,21 @@ class FileController {
 
     private fun File.isRootDir() = this.parentId == null
 
+    /**
+     * @api {put} /api/file/{id} 更新文件信息
+     * @apiDescription 更新指定 ID 的文件信息
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {Number} [ownerId = null] 文件归属者 ID
+     * @apiParam {String} [name = null] 文件名
+     * @apiParam {Number} [version = null] 文件版本号
+     * @apiParam {Number} [parentId = null] 父节点 ID
+     * @apiSuccessExample 请求成功
+     * {"status":"success","message":"file 3 has been update"}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int,
                @RequestParam(required = false) ownerId: Int?,
@@ -163,6 +216,17 @@ class FileController {
         }
     }
 
+    /**
+     * @api {delete} /api/file/{id} 删除文件
+     * @apiDescription 删除指定 ID 的文件节点，如果这是一个文件夹节点，则递归地删除其子节点
+     * @apiGroup File
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiSuccessExample 请求成功
+     * {"status":"success","message":"file 2 has been removed"}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {
         val file = Files.findById(id)

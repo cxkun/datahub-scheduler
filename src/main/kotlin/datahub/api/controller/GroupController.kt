@@ -42,6 +42,20 @@ import javax.validation.constraints.NotBlank
 @RequestMapping("/api/group")
 class GroupController {
 
+    /**
+     * @api {get} /api/group 获取项目组列表
+     * @apiDescription 获取项目组列表，支持分页和模糊查询
+     * @apiGroup Group
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {Number} [page = 1] 分页ID
+     * @apiParam {Number} [pageSize = 9999] 分页大小
+     * @apiParam {String} like 项目组名模糊匹配，多个词用空格分隔，null 字符串会被忽略
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"count":32,"groups":[{"id":37,"name":"rjktnfdu","isRemove":false,"createTime":"2006-10-07 09:46:27","updateTime":"2007-07-29 16:10:54"},{"id":38,"name":"fpjsyxun","isRemove":false,"createTime":"2044-10-25 01:02:29","updateTime":"2046-03-05 16:13:40"}]}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @GetMapping
     fun listing(@RequestParam(required = false, defaultValue = "1") page: Int,
                 @RequestParam(required = false, defaultValue = "9999") pageSize: Int,
@@ -64,6 +78,17 @@ class GroupController {
         ))
     }
 
+    /**
+     * @api {get} /api/group/{id} 查找项目组
+     * @apiDescription 查找指定 ID 的项目组信息，查找已删除的或不存在的项目组会返回失败
+     * @apiGroup Group
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"group":{"id":1,"name":"root","isRemove":false,"createTime":"2050-01-10 23:42:07","updateTime":"2050-10-27 21:44:49"}}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"group 7 not found"}
+     */
     @GetMapping("{id}")
     fun find(@PathVariable id: Int): ResponseData {
         val group = Groups.findById(id)
@@ -74,6 +99,18 @@ class GroupController {
         }
     }
 
+    /**
+     * @api {post} /api/group 创建项目组
+     * @apiDescription 创建项目组，并创建项目组的根节点，返回创建后的项目组信息和根节点信息
+     * @apiGroup Group
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {String} name 项目组名称
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"group":{"name":"xxxx","isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":40},"file":{"groupId":40,"ownerId":1,"name":"xxxx","type":"DIR","version":null,"parentId":null,"isRemove":false,"createTime":"2020-03-07 23:23:54","updateTime":"2020-03-07 23:23:54","id":70}}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @PostMapping
     fun create(@NotBlank(message = "{required}") name: String): ResponseData {
         val group = Group {
@@ -98,6 +135,18 @@ class GroupController {
         return Response.Success.WithData(mapOf("group" to group, "file" to file))
     }
 
+    /**
+     * @api {put} /api/group/{id} 更新项目组信息
+     * @apiDescription 更新指定 ID 的项目组信息，并返回更新后的数据
+     * @apiGroup Group
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiParam {String} [name = null] 项目组名称，如果不提供则不更新
+     * @apiSuccessExample 请求成功
+     * {"status":"success","data":{"group":{"id":38,"name":"fpjsy","isRemove":false,"createTime":"2044-10-25 01:02:29","updateTime":"2020-03-07 23:25:36"}}}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"group 7 not found"}
+     */
     @PutMapping("{id}")
     fun update(@PathVariable id: Int, @RequestParam(required = false) name: String?): ResponseData {
         val group = Groups.findById(id)
@@ -117,6 +166,17 @@ class GroupController {
         }
     }
 
+    /**
+     * @api {delete} /api/group/{id} 删除项目组
+     * @apiDescription 删除指定 ID 的项目组
+     * @apiGroup Group
+     * @apiVersion 0.1.0
+     * @apiHeader {String} token 用户授权 token
+     * @apiSuccessExample 请求成功
+     * {"status":"success","message":"group 38 has been removed"}
+     * @apiSuccessExample 请求失败
+     * {"status":"failed","error":"错误信息"}
+     */
     @DeleteMapping("{id}")
     fun remove(@PathVariable id: Int): ResponseData {
         val group = Groups.findById(id)
