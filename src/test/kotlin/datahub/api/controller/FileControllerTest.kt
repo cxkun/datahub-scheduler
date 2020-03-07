@@ -30,6 +30,7 @@ class FileControllerTest : RestfulTestToolbox() {
         SchemaUtils.rebuildDB()
         SchemaUtils.loadTable("datahub.users", this.javaClass.classLoader.getResource("tables/users.txt")!!.path)
         SchemaUtils.loadTable("datahub.files", this.javaClass.classLoader.getResource("tables/files.txt")!!.path)
+        SchemaUtils.loadTable("datahub.groups", this.javaClass.classLoader.getResource("tables/groups.txt")!!.path)
         this.postman = Postman(template)
         this.postman.login()
     }
@@ -74,7 +75,17 @@ class FileControllerTest : RestfulTestToolbox() {
 
     @Test
     fun findRootDir() {
+        postman.get("/api/file/root", mapOf("groupId" to 6)).shouldSuccess.thenGetData.thenGetItem("file")
+            .withExpect {
+                it["name"] shouldBe "hhkjnqwc"
+                it["ownerId"] shouldBe 124
+            }
 
+        // 已删除的项目组
+        postman.get("/api/file/root", mapOf("groupId" to 7)).shouldFailed.withNotFoundError("root in 7")
+
+        // 不存在的项目组
+        postman.get("/api/file/root", mapOf("groupId" to 40)).shouldFailed.withNotFoundError("root in 40")
     }
 
     @Test
