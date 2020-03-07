@@ -37,9 +37,6 @@ class GroupControllerTest : RestfulTestToolbox() {
         this.postman.login()
     }
 
-    @AfterAll
-    fun cleanEnvironment() = SchemaUtils.rebuildDB()
-
     @Test
     fun listing() {
         val validGroupCount = 32
@@ -51,6 +48,45 @@ class GroupControllerTest : RestfulTestToolbox() {
         val lastPageGroupCount = validGroupCount % pageSize
         for (page in 1..queryTimes) {
             postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize)).shouldSuccess
+                .thenGetData.andCheckCount(validGroupCount)
+                .thenGetListOf("groups").andCheckSize(if (page == queryTimes) lastPageGroupCount else pageSize)
+        }
+    }
+
+    @Test
+    fun search() {
+        // 提供空或 null 的相似词
+        var validGroupCount = 32
+        var pageSize = 5
+        var queryTimes = validGroupCount / pageSize + 1
+        var lastPageGroupCount = validGroupCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to null)).shouldSuccess
+                .thenGetData.andCheckCount(validGroupCount)
+                .thenGetListOf("groups").andCheckSize(if (page == queryTimes) lastPageGroupCount else pageSize)
+            postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to "null")).shouldSuccess
+                .thenGetData.andCheckCount(validGroupCount)
+                .thenGetListOf("groups").andCheckSize(if (page == queryTimes) lastPageGroupCount else pageSize)
+        }
+
+        // 提供一个相似词
+        validGroupCount = 12
+        pageSize = 5
+        queryTimes = validGroupCount / pageSize + 1
+        lastPageGroupCount = validGroupCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to " f")).shouldSuccess
+                .thenGetData.andCheckCount(validGroupCount)
+                .thenGetListOf("groups").andCheckSize(if (page == queryTimes) lastPageGroupCount else pageSize)
+        }
+
+        // 提供两个相似词
+        validGroupCount = 5
+        pageSize = 2
+        queryTimes = validGroupCount / pageSize + 1
+        lastPageGroupCount = validGroupCount % pageSize
+        for (page in 1..queryTimes) {
+            postman.get("/api/group", mapOf("page" to page, "pageSize" to pageSize, "like" to " f r ")).shouldSuccess
                 .thenGetData.andCheckCount(validGroupCount)
                 .thenGetListOf("groups").andCheckSize(if (page == queryTimes) lastPageGroupCount else pageSize)
         }
