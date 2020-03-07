@@ -23,16 +23,19 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.time.format.DateTimeFormatter
 import javax.servlet.*
 import javax.servlet.http.HttpServletRequest
 
 
+/**
+ * @author Jensen Qi
+ * @since 1.0.0
+ */
 @SpringBootApplication
 @Configuration
-open class RestfulServer : WebMvcConfigurerAdapter(), Filter {
+open class RestfulServer : WebMvcConfigurer, Filter {
 
     @Bean
     open fun ormModule(): Module = KtormModule()
@@ -59,19 +62,15 @@ open class RestfulServer : WebMvcConfigurerAdapter(), Filter {
 
     override fun doFilter(req: ServletRequest, resp: ServletResponse, chain: FilterChain) {
         req as HttpServletRequest
-        val notDispatch = req.servletPath.startsWithAny("/index.html", "/favicon.ico", "/dist/", "/api/")
-        if (notDispatch) {
+        if (req.servletPath.startsWithAny("/api/")) {
+            chain.doFilter(req, resp)
+        } else if (req.servletPath.startsWithAny("/index.html", "/favicon.ico", "/static/", "/inject.js.map", "/login")) {
             chain.doFilter(req, resp)
         } else {
-            req.getRequestDispatcher("${req.contextPath}/index.html").forward(req, resp)
+            req.getRequestDispatcher("/index.html").forward(req, resp)
         }
     }
 
     override fun destroy() {}
 
-    override fun addResourceHandlers(registry: ResourceHandlerRegistry?) {
-        registry!!.addResourceHandler("/static/**")
-            .addResourceLocations("classpath:/static/")
-        super.addResourceHandlers(registry)
-    }
 }
