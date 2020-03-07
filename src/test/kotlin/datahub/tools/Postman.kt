@@ -49,7 +49,7 @@ class Postman(private val template: TestRestTemplate) {
 
     fun get(url: String) = get(url, mapOf())
 
-    fun get(url: String, args: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+    fun get(url: String, args: Map<String, Any?>): ResponseEntity<Map<String, Any>> {
         val argString = args.map { (key, value) ->
             "$key=$value"
         }.joinToString("&")
